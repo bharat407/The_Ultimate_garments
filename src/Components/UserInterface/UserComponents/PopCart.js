@@ -45,7 +45,7 @@ export default function PopCart(props) {
         <div style={{ padding: 5, display: 'flex', width: 330, justifyContent: 'space-evenly' }}>
 
           <div style={{ width: 60, height: 60 }}>
-            <img src={`${ServerURL}/images/${item.icon}`} style={{ width: 60, height: 60 }} />
+            <img src={`${item.icon}`} style={{ width: 60, height: 60 }} />
           </div>
 
           <div style={{ padding: 3, display: 'flex', flexDirection: 'column', marginTop: -3 }}>

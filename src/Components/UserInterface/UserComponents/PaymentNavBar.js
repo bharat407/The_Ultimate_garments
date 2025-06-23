@@ -1,31 +1,73 @@
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import { ServerURL } from "../../Services/NodeServices"
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import { ServerURL } from "../../Services/NodeServices";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router";
 
-export default function PaymentNavBar(props){
-  var theme=useTheme()
-  const matches = useMediaQuery(theme.breakpoints.down('md'));  
-  var navigate=useNavigate()
+export default function PaymentNavBar(props) {
+  var theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.down("md"));
+  var navigate = useNavigate();
 
-    return(
-        <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="fixed" style={{ background: '#FFF' }}>
-          <Toolbar>
-          { matches?null:  <div onClick={()=>navigate('/home')} style={{ cursor:'pointer',fontSize: 26, fontWeight: 700, width: '40%', fontFamily: 'cursive' , display: 'flex', justifyContent: 'center', alignItems: 'center',background:'#fff',color:'#000',textAlign:'center' }}> 
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="fixed" style={{ background: "#FFF" }}>
+        <Toolbar>
+          {matches ? null : (
+            <div
+              onClick={() => navigate("/")}
+              style={{
+                cursor: "pointer",
+                fontSize: 26,
+                fontWeight: 700,
+                width: "40%",
+                fontFamily: "cursive",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                background: "#fff",
+                color: "#000",
+                textAlign: "center",
+              }}
+            >
               The Ultimate Garments
-          </div>}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '70%',right:0,color:'#000',background:'#fff',textAlign:'center' }}>
-            <div style={{background:'#f2f2f2',fontSize:23,fontFamily:'sans-serif',fontWeight:550, display: 'flex', justifyContent: 'center', alignItems: 'center',textAlign:'center'}}> 
-            <img src={`${ServerURL}/images/securityicon.png`} style={{width:'12%',height:'auto'}} />100% SECURE PAYMENT
+            </div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "70%",
+              right: 0,
+              color: "#000",
+              background: "#fff",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                background: "#f2f2f2",
+                fontSize: 23,
+                fontFamily: "sans-serif",
+                fontWeight: 550,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <img
+                src={`securityicon.png`}
+                style={{ width: "12%", height: "auto" }}
+              />
+              100% SECURE PAYMENT
+            </div>
           </div>
-          </div>
-          </Toolbar>
-        </AppBar>
-  
-      </Box>
-    )
+        </Toolbar>
+      </AppBar>
+    </Box>
+  );
 }

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
-import { ServerURL, getData, postData } from "../../Services/NodeServices";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
+// Slider settings
 const sliderSettingsMain = {
   dots: false,
   arrows: true,
@@ -25,111 +25,37 @@ const sliderSettingsThumbnails = {
   autoplay: false,
   focusOnSelect: true,
   responsive: [
-    {
-      breakpoint: 768,
-      settings: {
-        slidesToShow: 3,
-      },
-    },
-    {
-      breakpoint: 480,
-      settings: {
-        slidesToShow: 2,
-      },
-    },
+    { breakpoint: 768, settings: { slidesToShow: 3 } },
+    { breakpoint: 480, settings: { slidesToShow: 2 } },
   ],
 };
 
-const ImageSlider = ({
-  productid,
-  categoryid: propCategoryId,
-  subcategoryid: propSubCategoryId,
-}) => {
-  const [nav1, setNav1] = useState();
-  const [nav2, setNav2] = useState();
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [categoryid, setCategoryId] = useState(propCategoryId);
-  const [subcategoryid, setSubCategoryId] = useState(propSubCategoryId);
+// ImageSlider component for showing images from product object
+const ImageSlider = ({ product }) => {
+  const [nav1, setNav1] = useState(null);
+  const [nav2, setNav2] = useState(null);
 
-  // Fetch product details if only productid is provided
-  useEffect(() => {
-    const fetchProductDetails = async () => {
-      if (productid && !categoryid && !subcategoryid) {
-        try {
-          setLoading(true);
-          const result = await getData(`product/${productid}`);
-          if (result?.data) {
-            setCategoryId(result.data.categoryid);
-            setSubCategoryId(result.data.subcategoryid);
-          } else {
-            setError("Product details not found");
-          }
-        } catch (error) {
-          console.error("Failed to fetch product details:", error);
-          setError("Could not retrieve product information");
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchProductDetails();
-  }, [productid]);
+  if (!product) {
+    return <div>No product data</div>;
+  }
 
-  // Fetch images when all IDs are available
-  useEffect(() => {
-    const fetchImages = async () => {
-      if (!productid) {
-        setError("Product ID is required");
-        return;
-      }
-
-      if (!categoryid || !subcategoryid) {
-        setError("Loading product information...");
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const result = await postData("userinterface/fetchallpictures", {
-          categoryid,
-          subcategoryid,
-          productid,
-        });
-
-        if (result?.data?.length > 0) {
-          setImages(result.data);
-        } else {
-          setImages([]);
-          setError("No images available for this product");
-        }
-      } catch (error) {
-        console.error("Image fetch error:", error);
-        setError(error.message || "Failed to load images");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchImages();
-  }, [productid, categoryid, subcategoryid]);
+  const { picture = [] } = product;
 
   const renderImage = (img, index) => (
     <div key={index} style={{ padding: "5px" }}>
       <img
-        src={`${ServerURL}/images/${img}`}
+        src={img}
         alt={`Product view ${index + 1}`}
         style={{
           width: "100%",
           height: "auto",
           maxHeight: "400px",
           objectFit: "contain",
+          margin: "0 auto",
+          display: "block",
         }}
         onError={(e) => {
-          e.target.src = `${ServerURL}/images/default-product.png`;
+          e.target.src = `default-product.png`;
           e.target.onerror = null;
         }}
       />
@@ -137,44 +63,81 @@ const ImageSlider = ({
   );
 
   return (
-    <div style={{ width: "100%", margin: "0 auto" }}>
-      {loading && (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          Loading images...
-        </div>
-      )}
-
-      {error && (
-        <div style={{ textAlign: "center", padding: "20px", color: "red" }}>
-          {error}
-        </div>
-      )}
-
-      {!loading && !error && images.length > 0 && (
+    <div style={{ width: "100%", margin: "0 auto", textAlign: "center" }}>
+      {picture.length > 0 ? (
         <>
-          {/* Main Slider */}
           <Slider
             {...sliderSettingsMain}
-            asNavFor={nav1}
-            ref={(slider) => setNav2(slider)}
+            asNavFor={nav2}
+            ref={(slider) => setNav1(slider)}
           >
-            {images.map(renderImage)}
+            {picture.map(renderImage)}
           </Slider>
 
-          {/* Thumbnail Slider */}
           <div style={{ marginTop: "10px" }}>
             <Slider
               {...sliderSettingsThumbnails}
-              asNavFor={nav2}
-              ref={(slider) => setNav1(slider)}
+              asNavFor={nav1}
+              ref={(slider) => setNav2(slider)}
             >
-              {images.map(renderImage)}
+              {picture.map(renderImage)}
             </Slider>
           </div>
         </>
+      ) : (
+        <div>No images available</div>
       )}
     </div>
   );
 };
 
-export default ImageSlider;
+// ProductWithSlider fetches product data and renders ImageSlider
+const ProductWithSlider = ({ productId }) => {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!productId) {
+      setError("Missing product ID");
+      return;
+    }
+
+    const fetchProductById = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("http://localhost:8080/api/products/fetch_by_ids", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify([productId]), // Sending array of IDs
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        if (data?.data?.length > 0) {
+          setProduct(data.data[0]);
+        } else {
+          setError("Product not found");
+        }
+      } catch (err) {
+        setError(err.message || "Failed to fetch product");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductById();
+  }, [productId]);
+
+  if (loading) return <div>Loading product...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (!product) return null;
+
+  return <ImageSlider product={product} />;
+};
+
+export default ProductWithSlider;

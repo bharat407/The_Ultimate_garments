@@ -1,504 +1,570 @@
-import React, { useState, useEffect } from 'react';
-import { ServerURL, postData } from '../../Services/NodeServices';
-import { TextField, Button, Grid } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import CloseIcon from '@mui/icons-material/Close';
-import Checkbox from '@mui/material/Checkbox';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormControl from '@mui/material/FormControl';
-import DialogActions from '@mui/material/DialogActions';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import InputAdornment from '@mui/material/InputAdornment';
-import Input from '@mui/material/Input';
-import InputLabel from '@mui/material/InputLabel';
-import { useNavigate } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
-import LoginMenu from './LoginMenu';
+import * as React from "react";
+import { styled } from "@mui/material/styles";
+import { Button, Grid } from "@mui/material";
+import PropTypes from "prop-types";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { useState, useEffect } from "react";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import FormControl from "@mui/material/FormControl";
+import TextField from "@mui/material/TextField";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CallIcon from "@mui/icons-material/Call";
+import DialogActions from "@mui/material/DialogActions";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import Slide from "@mui/material/Slide";
+import { ServerURL } from "../../Services/NodeServices";
+import { postData } from "../../Services/NodeServices";
 
-export default function Signup(props) {
-  const matches = useMediaQuery('(max-width:1150px)');
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="down" ref={ref} {...props} />;
+});
 
-  const [openSignUp, setOpenSignUp] = useState(props.open);
-  const [openSignUpDetails, setOpenSignUpDetails] = useState(false);
-  const [openOtpDialog, setOpenOtpDialog] = useState(false)
-  const [myAccount, setMyAccount] = useState(false)
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialogContent-root": {
+    padding: theme.spacing(2),
+  },
+  "& .MuiDialogActions-root": {
+    padding: theme.spacing(1),
+  },
+}));
 
-  var navigate = useNavigate()
-  var dispatch = useDispatch()
-  var cart = useSelector(state => state.cart)
-  var keys = Object.keys(cart)
-  var user = useSelector(state => state.user)
-  var userDataKeys = Object.keys(user)
+const BootstrapDialogTitle = (props) => {
+  const { children, onClose, ...other } = props;
 
+  return (
+    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+      {children}
+      {onClose ? (
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      ) : null}
+    </DialogTitle>
+  );
+};
 
-  useEffect(function () { setOpenSignUp(props.open) }, [props])
+BootstrapDialogTitle.propTypes = {
+  children: PropTypes.node,
+  onClose: PropTypes.func.isRequired,
+};
 
-  const handleClose = () => {
-    setOpenSignUp(false)
-    setOpenSignUpDetails(false)
-    setOpenOtpDialog(false)
-  }
-  const handleSignUpDetails = () => {
-    alert(otp + "         " + inputOtp)
-    if (otp == inputOtp) {
-      if (userData.status) {
-        dispatch({ type: 'ADD_USER', payload: [userData.data.mobilenumber, userData.data] })
-        if (keys.length != 0) {
-          navigate('/address')
-        }
-        else {
-          setOpenOtpDialog(false)
-          setMyAccount(true)
-        }
+export default function SignupDialog(props) {
+  const [open, setOpen] = useState(false);
+  const [openOtp, setOpenOtp] = useState(false);
+  const [openDetail, setOpenDetail] = useState(false);
+  const [scroll, setScroll] = useState("paper");
+  const [value, setValue] = useState("female");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [dob, setDob] = useState("");
+  const [otp, setOtp] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
+  const handleChange = (event) => {
+    setValue(event.target.value);
+  };
+
+  const handleDetailClickOpen = (scrollType) => () => {
+    setOpenDetail(true);
+    setScroll(scrollType);
+    setOpen(false);
+    setOpenOtp(false);
+  };
+
+  const handleDetailClose = () => {
+    setOpenDetail(false);
+  };
+
+  const descriptionElementRef = React.useRef(null);
+  React.useEffect(() => {
+    if (openDetail) {
+      const { current: descriptionElement } = descriptionElementRef;
+      if (descriptionElement !== null) {
+        descriptionElement.focus();
       }
-      else {
-        setOpenSignUpDetails(true)
-        setOpenOtpDialog(false)
-        setOpenSignUp(false)
-      }
     }
-    else {
-      alert("Invalid Otp.......!!")
-    }
-  }
-  const handleOtpOpen = () => {
-    if (mobileNumber != '') {
-      generateOtp()
-      setOpenOtpDialog(true)
-      setOpenSignUp(false)
-    }
-    else {
-      alert('Please Input Number....!')
-    }
-  }
+  }, [openDetail]);
 
-  const [userData, setUserData] = useState([])
-  const [otp, setOtp] = useState('')
-  const [inputOtp, setInputOtp] = useState('')
-  const [mobileNumber, setMobileNumber] = useState('')
-  const [emailId, setEmailId] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [dob, setDob] = useState('')
-  const [gender, setGender] = useState('female')
+  const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
-  const fetchUserData = async () => {
-    var result = await postData('userinterface/check_user_mobilenumber', { mobilenumber: mobileNumber })
-    setUserData(result)
-  }
-  const generateOtp = () => {
-    fetchUserData()
-    var otp = parseInt(Math.random() * 8999) + 1000
-    setOtp(otp)
-    alert(`Your OTP is ${otp}`)
-  }
-  const handleSubmit = async () => {
-    var body = { mobilenumber: mobileNumber, emailid: emailId, firstname: firstName, lastname: lastName, dob: dob, gender: gender }
-    var result = await postData('userinterface/submit_userdata', body)
-    dispatch({ type: 'DELETE_USER', payload: [] })
-    if (result.status) {
-      dispatch({ type: 'ADD_USER', payload: [body.mobilenumber, body] })
-      if (keys.length != 0) {
-        navigate('/address')
-      }
-      else {
-        setOpenSignUpDetails(false)
-        setMyAccount(true)
-      }
+    const result = await postData("user/register", {
+      email,
+      password,
+      confirmPassword,
+      firstName,
+      lastName,
+      dob,
+      gender: value,
+    });
+
+    if (result.message === "OTP sent to email") {
+      setOpenOtp(true);
+      setOpen(false);
+      setError("");
+    } else {
+      setError(result.message);
     }
-    else {
-      alert("Pls Check the input values.........")
+  };
+
+  const handleVerifyOtp = async () => {
+    const result = await postData("user/verify-otp", {
+      email,
+      otp,
+    });
+
+    if (result.message === "User verified and registered successfully.") {
+      setOpenOtp(false);
+      setError("");
+      // Optionally auto-login the user
+      const loginResult = await postData("user/login", {
+        email,
+        password,
+      });
+
+      if (loginResult.token) {
+        setToken(loginResult.token);
+        localStorage.setItem("token", loginResult.token);
+        handleClose();
+      }
+    } else {
+      setError(result.message);
     }
+  };
+
+ const handleLogin = async () => {
+  const result = await postData("user/login", {
+    email: loginEmail,
+    password: loginPassword,
+  });
+
+  if (result.token) {
+    setToken(result.token);
+    setEmail(loginEmail);
+    localStorage.setItem("token", result.token);
+
+    // ✅ Fetch full user details
+    const userResponse = await fetch(`http://localhost:8080/user/get-by/${loginEmail}`);
+    const user = await userResponse.json();
+
+    if (user.userid) {
+      // 🔄 Save user to localStorage or pass via props
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+
+    handleClose();
+    setError("");
+  } else {
+    setError(result.error || "Login failed");
   }
+};
+
+
+  const handleResendOtp = async () => {
+    const result = await postData("user/resend-otp", { email });
+    if (result.message === "OTP resent successfully") {
+      setError("");
+    } else {
+      setError(result.message);
+    }
+  };
 
   const handleClickOpen = () => {
-    setOpenSignUp(true)
-  }
-  const handleLogout = (value) => {
-    setMyAccount(value)
-  }
-  const checkLogin = () => {
-    if (userDataKeys.length != 0) {
-      if (myAccount == true) {
-      }
-      else {
-        setMyAccount(true)
-      }
-    }
-  }
-  useEffect(function () {
-    checkLogin()
-  }, [])
+    setOpen(true);
+    setError("");
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setOpenOtp(false);
+    setOpenDetail(false);
+    setError("");
+  };
+
+  const handleOtpClose = () => {
+    setOpenOtp(false);
+  };
+
+  const handleBackToClickOpen = () => {
+    setOpen(true);
+    setOpenOtp(false);
+  };
+
+  const handleLogout = () => {
+    setToken("");
+    setLoginEmail("");
+    setLoginPassword("");
+    setError("");
+  };
+
+  const signupDetailDialog = () => {
+    return (
+      <Dialog
+        open={openDetail}
+        onClose={handleDetailClose}
+        PaperProps={{ sx: { position: "fixed", top: 40, right: 70, m: 0 } }}
+        fullWidth
+        maxWidth="xs"
+        scroll={scroll}
+        aria-labelledby="scroll-dialog-title"
+        aria-describedby="scroll-dialog-description"
+      >
+        <DialogTitle id="scroll-dialog-title">
+          <div
+            style={{
+              width: 70,
+              height: "auto",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <img
+              src={`${ServerURL}/images/popimg.webp`}
+              alt="Welcome"
+              style={{ width: "100%", height: "100%" }}
+            />
+          </div>
+          <div style={{ fontSize: 40, color: "#02475b" }}>Welcome to TUG</div>
+          <div style={{ fontSize: 15, fontWeight: 400, color: "#0087BA" }}>
+            Enter your details. Let us quickly get to know you so that we can get
+            you the best help :)
+          </div>
+        </DialogTitle>
+        <DialogContent dividers={scroll === "paper"}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Full Name</div>
+              <TextField
+                fullWidth
+                placeholder="First Name"
+                id="firstName"
+                variant="standard"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                placeholder="Last Name"
+                id="lastName"
+                variant="standard"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Date Of Birth</div>
+              <TextField
+                fullWidth
+                placeholder="dd/mm/yyyy"
+                id="dob"
+                variant="standard"
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Gender</div>
+              <FormControl>
+                <RadioGroup
+                  row
+                  aria-labelledby="demo-controlled-radio-buttons-group"
+                  name="controlled-radio-buttons-group"
+                  value={value}
+                  onChange={handleChange}
+                >
+                  <FormControlLabel value="male" control={<Radio />} label="Male" />
+                  <FormControlLabel value="female" control={<Radio />} label="Female" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Email Address</div>
+              <TextField
+                fullWidth
+                placeholder="name@email.com"
+                id="email"
+                variant="standard"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Password</div>
+              <TextField
+                fullWidth
+                placeholder="Password"
+                id="password"
+                type="password"
+                variant="standard"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Confirm Password</div>
+              <TextField
+                fullWidth
+                placeholder="Confirm Password"
+                id="confirmPassword"
+                type="password"
+                variant="standard"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={<Checkbox color="success" />}
+                label="Send me personalised health tips & offers on WhatsApp"
+              />
+            </Grid>
+            {error && (
+              <Grid item xs={12}>
+                <div style={{ color: "red" }}>{error}</div>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <div style={{ padding: 14 }}>
+                <Button
+                  style={{ background: "#02475b", color: "#fff" }}
+                  fullWidth
+                  variant="contained"
+                  onClick={handleRegister}
+                >
+                  REGISTER
+                </Button>
+              </div>
+            </Grid>
+          </Grid>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
+  const signupOtpDialog = () => {
+    return (
+      <BootstrapDialog
+        onClose={handleOtpClose}
+        PaperProps={{ sx: { position: "fixed", top: 40, right: 70, m: 0 } }}
+        fullWidth
+        maxWidth="xs"
+        aria-labelledby="customized-dialog-title"
+        open={openOtp}
+      >
+        <div
+          style={{
+            fontSize: 40,
+            marginLeft: 15,
+            marginTop: 15,
+            cursor: "pointer",
+          }}
+        >
+          <ArrowBackIcon fontSize="large" onClick={handleBackToClickOpen} />
+        </div>
+        <BootstrapDialogTitle id="customized-dialog-title" onClose={handleOtpClose}>
+          <div style={{ fontSize: 40, color: "#02475b" }}>Verify OTP</div>
+        </BootstrapDialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <div style={{ fontSize: 16, fontWeight: "500", color: "#0087BA" }}>
+                Now type in the OTP sent to {email} for authentication
+              </div>
+            </Grid>
+            <Grid item xs={8}>
+              <TextField
+                fullWidth
+                id="otp"
+                variant="standard"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+              <div
+                style={{ fontSize: 13, cursor: "pointer", marginTop: 5 }}
+                onClick={handleResendOtp}
+              >
+                Resend OTP
+              </div>
+              <div>or</div>
+            </Grid>
+            <Grid item xs={4}>
+              <Button
+                onClick={handleVerifyOtp}
+                variant="contained"
+                style={{ backgroundColor: "#02475b" }}
+              >
+                <ArrowForwardIcon />
+              </Button>
+            </Grid>
+            {error && (
+              <Grid item xs={12}>
+                <div style={{ color: "red" }}>{error}</div>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+      </BootstrapDialog>
+    );
+  };
 
   const signupDialog = () => {
     return (
-      <div>
-        {matches ?
-          <Dialog
-            open={openSignUp}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle style={{ padding: '0px 0px' }}>
-              <div style={{ position: 'relative' }}>
-                <img src={`${ServerURL}/images/signup.jpg`} style={{ width: '100%' }} />
-                <Button onClick={handleClose} style={{ position: 'absolute', top: '0.5%', right: '0.1%', color: '#ababab' }}><CloseIcon /></Button>
+      <BootstrapDialog
+        onClose={handleClose}
+        PaperProps={{ sx: { position: "fixed", top: 40, right: 70, m: 0 } }}
+        fullWidth
+        maxWidth="xs"
+        aria-labelledby="customized-dialog-title"
+        open={open}
+        TransitionComponent={Transition}
+      >
+        <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
+          <div style={{ fontSize: 40, color: "#02475b" }}>Login / Signup</div>
+        </BootstrapDialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>
+                Login
               </div>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 18, fontWeight: '500', color: '#0087BA' }}>
-                    Please enter your mobile number to login
-                  </div>
-                </Grid>
-                <Grid item xs={8}>
-                  <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                    <InputLabel htmlFor="standard-adornment-amount">Mobile Number</InputLabel>
-                    <Input
-                      id="standard-adornment-mobileno"
-                      startAdornment={<InputAdornment position="start">+91</InputAdornment>}
-                      onChange={(event) => setMobileNumber(event.target.value)}
-                    />
-                  </FormControl>
-                </Grid>
-                <Grid item xs={4}>
-                  <div style={{ diplay: 'flex', justifyContent: 'center', alignItem: 'center', background: 'gray', height: 60, width: 60, borderRadius: 50, cursor: 'pointer' }}>
-                    <Button variant="contained" onClick={handleOtpOpen} style={{ background: 'rgb(0, 135, 186)', color: 'white', height: 63, width: 63, borderRadius: 60, }}>   <ArrowForwardIcon fontSize='large' /></Button>
-                  </div>
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 12 }}>OTP will be sent to this number by SMS and whatsapp..</div>
-
-                  <div style={{ fontSize: 12, marginLeft: -13 }}>
-                    <Checkbox color="primary" />
-                    By signing up, I agree to the Privacy,Policy, Terms and Conditions of TUG.
-                  </div>
-                </Grid>
-              </Grid>
-            </DialogContent>
-          </Dialog>
-          :
-          <Dialog
-            open={openSignUp}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-            style={{ position: 'fixed', left: '63%', top: '-15%', height: '100%', width: '35%' }}
-          >
-            <DialogTitle style={{ padding: '0px 0px' }}>
-              <div style={{ position: 'relative' }}>
-                <img src={`${ServerURL}/images/signup.jpg`} style={{ width: '100%' }} />
-                <Button onClick={handleClose} style={{ position: 'absolute', top: '0.5%', right: '0.1%', color: '#ababab' }}><CloseIcon /></Button>
+              <TextField
+                fullWidth
+                placeholder="Email"
+                variant="standard"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                placeholder="Password"
+                type="password"
+                variant="standard"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+              />
+              <Button
+                fullWidth
+                variant="contained"
+                style={{ marginTop: 10, backgroundColor: "#02475b" }}
+                onClick={handleLogin}
+              >
+                Login
+              </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <div
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  textAlign: "center",
+                  marginTop: 20,
+                }}
+              >
+                OR
               </div>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 18, fontWeight: '500', color: '#0087BA' }}>
-                    Please enter your mobile number to login
-                  </div>
-                </Grid>
-                <Grid item xs={8}>
-                  <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                    <InputLabel htmlFor="standard-adornment-amount">Mobile Number</InputLabel>
-                    <Input
-                      id="standard-adornment-mobileno"
-                      startAdornment={<InputAdornment position="start">+91</InputAdornment>}
-                      onChange={(event) => setMobileNumber(event.target.value)}
-                    />
-                  </FormControl>
-                </Grid>
-                <Grid item xs={4}>
-                  <div style={{ diplay: 'flex', justifyContent: 'center', alignItem: 'center', background: 'gray', height: 60, width: 60, borderRadius: 50, cursor: 'pointer' }}>
-                    <Button variant="contained" onClick={handleOtpOpen} style={{ background: 'rgb(0, 135, 186)', color: 'white', height: 63, width: 63, borderRadius: 60, }}>   <ArrowForwardIcon fontSize='large' /></Button>
-                  </div>
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 12 }}>OTP will be sent to this number by SMS and whatsapp..</div>
-
-                  <div style={{ fontSize: 12, marginLeft: -13 }}>
-                    <Checkbox color="primary" />
-                    By signing up, I agree to the Privacy,Policy, Terms and Conditions of TUG.
-                  </div>
-                </Grid>
-              </Grid>
-            </DialogContent>
-          </Dialog>
-        }
-      </div>
-    )
-  }
-
-  const signUpDetails = () => {
-    return (
-      <div>
-        {matches ?
-          <Dialog
-            open={openSignUpDetails}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle style={{ padding: '0px 0px' }}>
-              <div style={{ position: 'relative' }}>
-                <img src={`${ServerURL}/images/signup.jpg`} style={{ width: '100%' }} />
-                <Button onClick={handleClose} style={{ position: 'absolute', top: '0.5%', right: '0.1%', color: '#ababab' }}><CloseIcon /></Button>
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  marginTop: 20,
+                  cursor: "pointer",
+                  color: "#0087BA",
+                  textAlign: "center",
+                }}
+                onClick={handleDetailClickOpen("paper")}
+              >
+                Register New User
               </div>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={3}>
-                <Grid item xs={12} style={{ fontFamily: 'cursive', fontSize: 20, color: 'rgb(0, 135, 186)', fontWeight: 600 }}>
-                  Enter Your Details
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    Full Name
-                  </div>
-                  <TextField fullWidth onChange={(event) => setFirstName(event.target.value)} placeholder='First Name' id="standard-basic" variant="standard" />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField fullWidth onChange={(event) => setLastName(event.target.value)} placeholder='Last Name' id="standard-basic" variant="standard" />
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    Date Of Birth
-                  </div>
-                  <TextField type='date' onChange={(event) => setDob(event.target.value)} fullWidth placeholder='dd/mm/yyyy' id="standard-basic" variant="standard" />
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    Gender
-                  </div>
-                  <FormControl>
-                    <RadioGroup
-                      row
-                      aria-labelledby="demo-controlled-radio-buttons-group"
-                      name="controlled-radio-buttons-group"
-                      value={gender}
-                      onChange={(event) => setGender(event.target.value)}
-                    >
-                      <FormControlLabel value="male" control={<Radio />} label="Male" />
-                      <FormControlLabel value="female" control={<Radio />} label="Female" />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    Email Address (Optional)
-                  </div>
-                  <TextField onChange={(event) => setEmailId(event.target.value)} fullWidth placeholder='name@email.com' id="standard-basic" variant="standard" />
-                </Grid>
-                <Grid item xs={12}>
-                  <div>
-                    <FormControlLabel
-                      style={{ fontSize: 2 }}
-                      control={<Checkbox color="success" />}
-                      label="send me personalised health tips & offers on whatsapp"
-                    />
-                  </div>
-                </Grid>
-                {/* <Grid item xs={12}>
-                  <div style={{ background: 'rgb(0, 135, 186)', padding: 14, color: 'white' }}>
-                    <CardGiftcardIcon /> <div style={{ fontSize: 12 }}>  Do You Have A Referral Code? (Optional)</div>
-                    <TextField fullWidth placeholder='Enter Referral Code' id="standard-basic" variant="standard" />
-                  </div>
-                </Grid> */}
+            </Grid>
+            {error && (
+              <Grid item xs={12}>
+                <div style={{ color: "red" }}>{error}</div>
               </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <div style={{ padding: 14 }}>
-                    <Button onClick={handleSubmit} style={{ background: 'rgb(0, 135, 186)', color: 'white' }} fullWidth variant="contained">SUBMIT</Button>
-                  </div>
-                </Grid>
-              </Grid>
-            </DialogActions>
-          </Dialog>
-          :
-          <Dialog
-            open={openSignUpDetails}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-            style={{ position: 'fixed', left: '63%', height: '100%', width: '35%' }}
-          >
-            <DialogTitle style={{ padding: '0px 0px' }}>
-              <div style={{ position: 'relative' }}>
-                <img src={`${ServerURL}/images/signup.jpg`} style={{ width: '100%' }} />
-                <Button onClick={handleClose} style={{ position: 'absolute', top: '0.5%', right: '0.1%', color: '#ababab' }}><CloseIcon /></Button>
-              </div>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={3}>
-                <Grid item xs={12} style={{ fontFamily: 'cursive', fontSize: 20, color: 'rgb(0, 135, 186)', fontWeight: 600 }}>
-                  Enter Your Details
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    Full Name
-                  </div>
-                  <TextField fullWidth onChange={(event) => setFirstName(event.target.value)} placeholder='First Name' id="standard-basic" variant="standard" />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField fullWidth onChange={(event) => setLastName(event.target.value)} placeholder='Last Name' id="standard-basic" variant="standard" />
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    Date Of Birth
-                  </div>
-                  <TextField type='date' onChange={(event) => setDob(event.target.value)} fullWidth placeholder='dd/mm/yyyy' id="standard-basic" variant="standard" />
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    Gender
-                  </div>
-                  <FormControl>
-                    <RadioGroup
-                      row
-                      aria-labelledby="demo-controlled-radio-buttons-group"
-                      name="controlled-radio-buttons-group"
-                      value={gender}
-                      onChange={(event) => setGender(event.target.value)}
-                    >
-                      <FormControlLabel value="male" control={<Radio />} label="Male" />
-                      <FormControlLabel value="female" control={<Radio />} label="Female" />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    Email Address (Optional)
-                  </div>
-                  <TextField onChange={(event) => setEmailId(event.target.value)} fullWidth placeholder='name@email.com' id="standard-basic" variant="standard" />
-                </Grid>
-                <Grid item xs={12}>
-                  <div>
-                    <FormControlLabel
-                      style={{ fontSize: 2 }}
-                      control={<Checkbox color="success" />}
-                      label="send me personalised health tips & offers on whatsapp"
-                    />
-                  </div>
-                </Grid>
-                {/* <Grid item xs={12}>
-                  <div style={{ background: 'rgb(0, 135, 186)', padding: 14, color: 'white' }}>
-                    <CardGiftcardIcon /> <div style={{ fontSize: 12 }}>  Do You Have A Referral Code? (Optional)</div>
-                    <TextField fullWidth placeholder='Enter Referral Code' id="standard-basic" variant="standard" />
-                  </div>
-                </Grid> */}
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <div style={{ padding: 14 }}>
-                    <Button onClick={handleSubmit} style={{ background: 'rgb(0, 135, 186)', color: 'white' }} fullWidth variant="contained">SUBMIT</Button>
-                  </div>
-                </Grid>
-              </Grid>
-            </DialogActions>
-          </Dialog>
-        }
-      </div>
-    )
-  }
-
-  const otpDialog = () => {
-    return (
-      <div>
-        {matches ?
-          <Dialog
-            open={openOtpDialog}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle style={{ padding: '0px 0px' }}>
-              <div style={{ position: 'relative' }}>
-                <img src={`${ServerURL}/images/signup.jpg`} style={{ width: '100%' }} />
-                <Button onClick={handleClose} style={{ position: 'absolute', top: '0.5%', right: '0.1%', color: '#ababab' }}><CloseIcon /></Button>
-              </div>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 16, fontWeight: '500', color: '#0087BA' }}>
-                    Now type in the OTP sent to you for authentication
-                  </div>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField fullWidth onChange={(event) => setInputOtp(event.target.value)} id="standard-basic" variant="standard" />
-                  <div style={{ fontSize: 13 }}>Resend OTP</div>
-                </Grid>
-                <Grid item xs={4}>
-                  <div style={{ diplay: 'flex', justifyContent: 'center', alignItem: 'center', background: 'rgb(0, 135, 186)', color: 'white', height: 60, width: 60, borderRadius: 50, cursor: 'pointer', }}>
-                    <Button variant="contained" onClick={handleSignUpDetails} style={{ background: 'rgb(0, 135, 186)', color: 'white', height: 63, width: 63, borderRadius: 60 }}><ArrowForwardIcon fontSize='large' /></Button>
-                  </div>
-                </Grid>
-              </Grid>
-            </DialogContent>
-          </Dialog>
-          :
-          <Dialog
-            open={openOtpDialog}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-            style={{ position: 'fixed', left: '63%', top: '-15%', height: '100%', width: '35%' }}
-          >
-            <DialogTitle style={{ padding: '0px 0px' }}>
-              <div style={{ position: 'relative' }}>
-                <img src={`${ServerURL}/images/signup.jpg`} style={{ width: '100%' }} />
-                <Button onClick={handleClose} style={{ position: 'absolute', top: '0.5%', right: '0.1%', color: '#ababab' }}><CloseIcon /></Button>
-              </div>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <div style={{ fontSize: 16, fontWeight: '500', color: '#0087BA' }}>
-                    Now type in the OTP sent to you for authentication
-                  </div>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField fullWidth onChange={(event) => setInputOtp(event.target.value)} id="standard-basic" variant="standard" />
-                  <div style={{ fontSize: 13 }}>Resend OTP</div>
-                  {/* <div>
-                    or
-                  </div> */}
-                </Grid>
-                <Grid item xs={4}>
-                  <div style={{ diplay: 'flex', justifyContent: 'center', alignItem: 'center', background: 'rgb(0, 135, 186)', color: 'white', height: 60, width: 60, borderRadius: 50, cursor: 'pointer', }}>
-                    <Button variant="contained" onClick={handleSignUpDetails} style={{ background: 'rgb(0, 135, 186)', color: 'white', height: 63, width: 63, borderRadius: 60 }}><ArrowForwardIcon fontSize='large' /></Button>
-                  </div>
-                </Grid>
-                {/* <Grid item xs={12}>
-                  <Button variant="contained" style={{ background: 'rgb(0, 135, 186)', color: 'white' }}><CallIcon /> GET OTP ON CALL</Button>
-                </Grid> */}
-              </Grid>
-            </DialogContent>
-          </Dialog>
-        }
-      </div>
-    )
-  }
+            )}
+          </Grid>
+        </DialogContent>
+      </BootstrapDialog>
+    );
+  };
 
   return (
     <div>
-      <div style={{ fontFamily: 'cursive', fontSize: 12, fontWeight: 600, color: 'white', cursor: 'pointer' }}>
-        {myAccount ? <div><LoginMenu mobilenumber={mobileNumber} onClick={(value) => handleLogout(value)} /></div> : <>{matches ? <div style={{ fontFamily: 'cursive', fontSize: 10, fontWeight: 600, color: 'white', cursor: 'pointer' }} onClick={handleClickOpen} >LOGIN <br />| SINUP</div> : <div onClick={handleClickOpen}>LOGIN | SINUP</div>}</>}
-      </div>
+      {/* Show LOGIN | SIGNUP link only if user is NOT logged in */}
+      {!token && (
+        <div
+          style={{ fontFamily: "Sans-serif", fontSize: 13, fontWeight: 600 }}
+          onClick={handleClickOpen}
+        >
+          LOGIN | SIGNUP
+        </div>
+      )}
+
+      {/* If logged in, show Logout button */}
+      {token && (
+        <div
+          style={{
+            fontFamily: "Sans-serif",
+            fontSize: 13,
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+           <span>{email}</span>
+            <Button variant="text" size="small" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
+      )}
 
       {signupDialog()}
-      {signUpDetails()}
-      {otpDialog()}
+      {signupOtpDialog()}
+      {signupDetailDialog()}
     </div>
   );
 }

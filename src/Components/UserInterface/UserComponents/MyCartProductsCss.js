@@ -1,26 +1,18 @@
-import React from 'react';
-import { makeStyles } from '@mui/styles';
-
-
+import React from "react";
+import { makeStyles } from "@mui/styles";
 
 export const useStyles = makeStyles({
-
-  container:{marginTop:9,
-    width: '100%',
-    height:'auto',
-    background: 'gray',
-    display:'flex',
-    flexWrap:'wrap',
-    border:'2px solid red'
-    
-    
+  container: {
+    marginTop: 9,
+    width: "100%",
+    height: "auto",
+    background: "gray",
+    display: "flex",
+    flexWrap: "wrap",
+    border: "2px solid red",
   },
-  img:{
-    width: '8%',
-    height:'auto',
-    
+  img: {
+    width: "8%",
+    height: "auto",
   },
-
-    
-
-})  
+});

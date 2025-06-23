@@ -6,161 +6,150 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
-// Component..........................
+// Components
 import SizeChart from "./SizeChart";
 import PlusMinusComponent from "./PlusMinusComponent";
 import ColorRadio from "./ColorRadio";
 import DeliveryOptions from "./DeliveryOptions";
-// Service
+// Services
 import { postData } from "../../Services/NodeServices";
-// Redux Fn
+// Redux
 import { useDispatch, useSelector } from "react-redux";
 
 export default function ProductDetailsFilling(props) {
-  var navigate = useNavigate();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  var product = JSON.parse(props.productInfo);
-  var dispatch = useDispatch();
+  // Parse productInfo (string or object)
+  const product =
+    typeof props.productInfo === "string"
+      ? JSON.parse(props.productInfo)
+      : props.productInfo;
 
-  var cart = useSelector((state) => state.cart);
-  var selectedProduct = cart[product.productid];
-  var keys = Object.keys(cart);
-  var selectedQty = null;
+  const cart = useSelector((state) => state.cart);
+  const selectedProduct = cart[product.id];
+  const keys = Object.keys(cart);
 
-  if (keys?.length > 0) {
-    var selectedQty = selectedProduct?.qty;
-    product["size"] = selectedProduct?.size;
-    product["color"] = selectedProduct?.color;
-    product["qty"] = selectedProduct?.qty;
+  // States
+  const [sizes, setSizes] = useState([]); // sizes is array of strings like ["S", "L"]
+  const [colors, setColors] = useState([]); // array of colors
+  const [selectedSize, setSelectedSize] = useState(selectedProduct?.size || null);
+  const [selectedColor, setSelectedColor] = useState(
+    selectedProduct?.color || null
+  );
+  const [qty, setQty] = useState(selectedProduct?.qty || 0);
+  const [heart, setHeart] = useState(false);
+
+  const matches = useMediaQuery("(max-width:720px)");
+
+  // Fetch sizes from POST API fetch_all_dimensions
+ const fetchSizes = async () => {
+  if (!product.categoryid || !product.subcategoryid || !product.id) {
+    console.error("Missing categoryid, subcategoryid or productid");
+    return;
   }
 
-  // Size and Color Manupilation..................
-  const [size, setSize] = useState([]);
-  const [colors, setColors] = useState(null);
-
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedSize, setSelectedSize] = useState(null);
-  const [qty, setQty] = useState(selectedQty);
-
-  const fetchAllSize = async () => {
-    var result = await postData(
-      "userinterface/display_all_color_by_productid",
-      { productid: product.productid }
-    );
-    // var sizes = Object.values(JSON.parse(result.data[0].size))
-    console.log("SIZEEEEEEEEEEEEEE:", result.data);
-    var sizes = result.data.map((item) => {
-      if (
-        keys > 0 &&
-        selectedProduct != "undefined" &&
-        selectedProduct?.size == item.size
-      ) {
-        fetchAllColors(item.size);
-        return { size: item.size, status: true };
-      } else {
-        return { size: item.size, status: false };
-      }
-    });
-    setSize(sizes);
+  const body = {
+    categoryid: product.categoryid,
+    subcategoryid: product.subcategoryid,
+    productid: product.id,
   };
-  useEffect(function () {
-    fetchAllSize();
+
+  const result = await postData("api/dimensions/fetch_all_dimensions", body);
+
+  if (result.status === false) {
+    Swal.fire("Error", result.error || "Failed to fetch sizes", "error");
+    return;
+  }
+
+  // Find the matching dimension object
+  const matchedDimension = result.find(
+    (dim) =>
+      dim.categoryid === product.categoryid &&
+      dim.productid === product.id &&
+      dim.subcategoryid === product.subcategoryid
+  );
+
+  const sizesList = matchedDimension ? matchedDimension.dimension : [];
+
+  setSizes(sizesList);
+
+  if (selectedSize) {
+    fetchColors(product.id, selectedSize);
+  }
+};
+
+
+  // Fetch colors from GET API using productId query param
+  const fetchColors = async (productId, size) => {
+    if (!productId) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/colors/product-by-id?productId=${productId}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch colors");
+      }
+      let colorsData = await response.json();
+
+      // Filter colors by selected size if provided
+      if (size) {
+        colorsData = colorsData.filter((c) => c.size === size);
+      }
+
+      setColors(colorsData);
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  useEffect(() => {
+    fetchSizes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Handle selecting a size
   const handleSize = (index) => {
+    const newSize = sizes[index];
+    setSelectedSize(newSize);
     setSelectedColor(null);
-    setQty(null);
-
-    var temp = size.map((item) => {
-      return { size: item.size, status: false };
-    });
-    temp[index].status = true;
-    setSelectedSize(temp[index].size);
-    setSize([...temp]);
-
-    product["size"] = temp[index].size;
-    if (selectedSize != null && selectedColor != null)
-      dispatch({ type: "ADD_CART", payload: [product.productid, product] });
-
-    fetchAllColors(temp[index].size);
-  };
-  const showSize = () => {
-    return size.map((item, i) => {
-      return (
-        <span
-          onClick={() => handleSize(i)}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: 47,
-            width: 47,
-            textAlign: "center",
-            fontSize: 13,
-            marginRight: 5,
-            cursor: "pointer",
-            border: item.status ? "2px solid #51cccc" : "1px solid #ddd",
-            borderRadius: 50,
-          }}
-        >
-          {item.size}
-        </span>
-      );
-    });
-  };
-
-  const fetchAllColors = async (sizeid) => {
-    var result = await postData("userinterface/display_all_color_by_size", {
-      productid: product.productid,
-      size: sizeid,
-    });
-
-    var pcolor = JSON.parse(result.data[0].color);
-    setColors(pcolor);
-  };
-  const handleColor = (value) => {
-    setSelectedColor(value);
     setQty(0);
-    product["color"] = value;
-    if (selectedSize != null && selectedColor != null)
-      dispatch({ type: "ADD_CART", payload: [product.productid, product] });
+    fetchColors(product.id, newSize);
   };
-  //.............................................
 
-  // Heart Manupilation..........................
-  const [heart, setHeart] = useState(false);
-  const matches = useMediaQuery("(max-width:720px)");
-  const handleFavoriteHeart = () => {
-    setHeart(true);
+  // Handle selecting a color
+  const handleColor = (colorValue) => {
+    setSelectedColor(colorValue);
+    setQty(1);
   };
-  const handleHeart = () => {
-    setHeart(false);
-  };
-  //..............................................
 
-  // Store the Data In Redux Container............
+  // Handle quantity change
   const handleQtyChange = (value) => {
-    if (selectedSize != null && selectedColor != null) {
-      if (value == 0) {
-        dispatch({
-          type: "DELETE_CART",
-          payload: [product.productid, product],
-        });
-      } else {
-        product["qty"] = value;
-        product["size"] = selectedSize;
-        product["color"] = selectedColor;
-        dispatch({ type: "ADD_CART", payload: [product.productid, product] });
-        setQty(value);
-      }
-    } else {
-      Swal.fire("Pls Select Size & Color Both");
-      setQty(null);
+    if (!selectedSize || !selectedColor) {
+      Swal.fire("Select size and color first");
+      return;
     }
 
-    props.updateCart();
+    if (value === 0) {
+      dispatch({ type: "DELETE_CART", payload: product.id });
+      setQty(0);
+    } else {
+      const updatedProduct = {
+        ...product,
+        size: selectedSize,
+        color: selectedColor,
+        qty: value,
+      };
+      dispatch({ type: "ADD_CART", payload: [product.id, updatedProduct] });
+      setQty(value);
+    }
+
+    if (props.updateCart) props.updateCart();
   };
-  //...............................................
+
+  const toggleHeart = () => setHeart((prev) => !prev);
 
   return (
     <div>
@@ -175,29 +164,25 @@ export default function ProductDetailsFilling(props) {
               <span style={{ fontSize: 25, fontWeight: 700 }}>
                 {product.productname}
               </span>
-              {heart ? (
-                <span
-                  onClick={handleHeart}
-                  style={{ marginLeft: 70, cursor: "pointer" }}
-                >
+              <span
+                onClick={toggleHeart}
+                style={{ marginLeft: 70, cursor: "pointer" }}
+              >
+                {heart ? (
                   <FavoriteIcon style={{ color: "red" }} />
-                </span>
-              ) : (
-                <span
-                  onClick={handleFavoriteHeart}
-                  style={{ marginLeft: 70, cursor: "pointer" }}
-                >
+                ) : (
                   <FavoriteBorderIcon />
-                </span>
-              )}
+                )}
+              </span>
             </>
           )}
         </Grid>
+
         <Grid item xs={12}>
           {product.offerprice ? (
             <>
               <span style={{ fontSize: 20, fontWeight: 700 }}>
-                PRICE:&nbsp;&#8377;{product.offerprice}
+                PRICE: ₹{product.offerprice}
               </span>
               &nbsp;&nbsp;
               <span
@@ -207,62 +192,86 @@ export default function ProductDetailsFilling(props) {
                   textDecoration: "line-through",
                 }}
               >
-                &#8377;{product.price}
+                ₹{product.price}
               </span>
               &nbsp;&nbsp;
-              <span style={{ fontSize: 18, fontWeight: 700, color: "#4d9d0b" }}>
-                (&#8377;{product.price - product.offerprice} off)
+              <span
+                style={{ fontSize: 18, fontWeight: 700, color: "#4d9d0b" }}
+              >
+                (₹{product.price - product.offerprice} off)
               </span>
             </>
           ) : (
-            <>
-              <span style={{ fontSize: 20, fontWeight: 700 }}>
-                PRICE:&nbsp;&#8377;{product.price}
-              </span>
-            </>
+            <span style={{ fontSize: 20, fontWeight: 700 }}>
+              PRICE: ₹{product.price}
+            </span>
           )}
           <div>
-            <span style={{ fontSize: 15 }}>Inclusive of All Taxes +</span>
-            &nbsp;&nbsp;
+            <span style={{ fontSize: 15 }}>Inclusive of All Taxes +</span>&nbsp;&nbsp;
             <span style={{ color: "#efb30b", fontWeight: 600 }}>
               Free Shipping
             </span>
           </div>
         </Grid>
+
         <Grid item xs={12}>
-          <div style={{ display: "flex" }}>
-            <span style={{ marginRight: 200 }}>SIZE</span>
-            <span>
-              <SizeChart />
-            </span>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>SIZE</span>
+            <SizeChart />
           </div>
           <div
             style={{
               marginTop: 15,
               display: "flex",
-              flexDirection: "row",
               flexWrap: "wrap",
+              gap: 8,
             }}
           >
-            {showSize()}
+            {sizes.map((sizeVal, i) => (
+              <span
+                key={i}
+                onClick={() => handleSize(i)}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: 47,
+                  width: 47,
+                  textAlign: "center",
+                  fontSize: 13,
+                  cursor: "pointer",
+                  borderRadius: "50%",
+                  border: sizeVal === selectedSize ? "2px solid #51cccc" : "1px solid #ddd",
+                }}
+              >
+                {sizeVal}
+              </span>
+            ))}
           </div>
         </Grid>
-        <Grid item xs={10}>
+
+        <Grid item xs={12}>
           <ColorRadio
             colorlist={colors}
-            onClick={(value) => handleColor(value)}
-            colorName={selectedProduct && selectedProduct.color}
+            onClick={handleColor}
+            colorName={selectedColor}
           />
         </Grid>
-        <Grid item xs={5}>
-          <PlusMinusComponent
-            value={qty}
-            onChange={(value) => handleQtyChange(value)}
-          />
+
+        <Grid item xs={6} sm={3}>
+          <PlusMinusComponent value={qty} onChange={handleQtyChange} />
         </Grid>
-        <Grid item xs={5}>
+
+        <Grid item xs={6} sm={3}>
           <Button
             fullWidth
+            onClick={()=> navigate("/mycart")}
             variant="contained"
             style={{
               height: "100%",
@@ -275,22 +284,24 @@ export default function ProductDetailsFilling(props) {
             Buy Now
           </Button>
         </Grid>
+
         <Grid item xs={12}>
           <Button
             variant="contained"
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/")}
             style={{
               width: "83.3%",
               background: "#1e90ff",
-              height: "123%",
-              color: "#000",
+              height: 40,
+              color: "#fff",
             }}
             startIcon={<ArrowCircleRightOutlinedIcon />}
           >
             Continue Shopping
           </Button>
         </Grid>
-        <Grid item xs={10}>
+
+        <Grid item xs={12}>
           <DeliveryOptions />
         </Grid>
       </Grid>

@@ -1,235 +1,340 @@
-// Component
 import { Grid, Avatar, TextField, Button } from "@material-ui/core";
-// State and Effect fn
 import { useState, useEffect } from "react";
-// Style
 import { useStyles } from "./ProductCss";
-// Drop Down
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-// Services
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 import { getData, postData } from "../Services/NodeServices";
-// Sweet Alert
-import Swal from "sweetalert2"
-// Navigation
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
-export default function Product() { // style
-  var classes = useStyles()
-  //Navigate
-  var navigate = useNavigate()
+export default function Product() {
+  const classes = useStyles();
+  const navigate = useNavigate();
 
-  // State 
-  const [categoryList, setCategoryList] = useState([])
-  const [categoryId, setCategoryId] = useState()
-  const [subCategoryList, setSubCategoryList] = useState([])
-  const [subCategoryId, setSubCategoryId] = useState()
-  const [productName, setProductName] = useState()
-  const [price, setPrice] = useState()
-  const [offerPrice, setOfferPrice] = useState()
-  const [stock, setStock] = useState()
-  const [description, setDescription] = useState()
-  const [rating, setRating] = useState()
-  const [status, setStatus] = useState()
-  const [saleStatus, setSaleStatus] = useState()
-  const [icon, setIcon] = useState({ url: '/icon.png', bytes: '' })
+  const [categoryList, setCategoryList] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
+  const [subCategoryList, setSubCategoryList] = useState([]);
+  const [subCategoryId, setSubCategoryId] = useState("");
+  const [productName, setProductName] = useState("");
+  const [price, setPrice] = useState("");
+  const [offerPrice, setOfferPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [description, setDescription] = useState("");
+  const [rating, setRating] = useState("");
+  const [status, setStatus] = useState("");
+  const [saleStatus, setSaleStatus] = useState("");
+  const [icon, setIcon] = useState({ url: "/icon.png", bytes: "" });
+  const [pictures, setPictures] = useState([]); // New state for multiple images
 
-  // Category DropDown Manupilation
-  const handleCategoryChange = async (event) => {
-    setCategoryId(event.target.value)
-    fetchAllSubCategory(event.target.value)
-  }
   const fetchAllCategory = async () => {
-    var result = await getData('category/display_all_category')
-    setCategoryList(result.data)
-  }
-  useEffect(function () {
-    fetchAllCategory()
-  }, [])
-  const fillCategories = () => {
-    return categoryList.map((item) => {
-      return (
-        <MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
-      )
-    })
-  }
-  // ..............................  
-  // SubCategory DropDown Manupilation
-  const handleSubCategoryChange = (event) => {
-    setSubCategoryId(event.target.value)
-  }
+    try {
+      const result = await getData("category/display_all_category");
+      if (result?.categories) {
+        setCategoryList(result.categories);
+      } else {
+        setCategoryList([]);
+        Swal.fire({
+          icon: "warning",
+          title: "No Categories Found",
+          text: "Please add categories first before creating products",
+        });
+      }
+    } catch (error) {
+      console.error("Fetch categories error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error Loading Categories",
+        text: `Failed to load categories: ${error.message}`,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchAllCategory();
+  }, []);
+
+  const handleCategoryChange = async (event) => {
+    const cid = event.target.value;
+    setCategoryId(cid);
+    setSubCategoryId(""); // Reset subcategory selection
+    setSubCategoryList([]); // Clear previous subcategories
+
+    if (cid) {
+      // Only fetch if a category is selected
+      await fetchAllSubCategory(cid);
+    }
+  };
+
   const fetchAllSubCategory = async (cid) => {
-    var body = { categoryid: cid }
-    var result = await postData('subcategory/fetch_all_subcategory', body)
-    setSubCategoryList(result.data)
-  }
-  // useEffect(function(){
-  //   fetchAllSubCategory()
-  // },[categoryId])
-  const fillSubCategories = () => {
-    return subCategoryList.map((item) => {
-      return (
-        <MenuItem value={item.subcategoryid}>{item.subcategoryname}</MenuItem>
-      )
-    })
-  }
-  // ...............................
+    try {
+      const result = await getData(`subcategory/by-category/${cid}`);
+      console.log("Subcategory response:", result);
 
-  //Icon Change
+      // Since API returns direct array
+      setSubCategoryList(result || []);
+    } catch (error) {
+      console.error("Fetch subcategories error:", error);
+      setSubCategoryList([]);
+      Swal.fire({
+        icon: "error",
+        title: "Error Loading Subcategories",
+        text: `Failed to load subcategories: ${error.message}`,
+      });
+    }
+  };
+
   const handleIcon = (event) => {
-    setIcon({ url: URL.createObjectURL(event.target.files[0]), bytes: event.target.files[0] })
-  }
+    setIcon({
+      url: URL.createObjectURL(event.target.files[0]),
+      bytes: event.target.files[0],
+    });
+  };
+
+  // New function to handle multiple picture uploads
+  const handlePictures = (event) => {
+    const files = Array.from(event.target.files);
+    const pictureData = files.map((file) => ({
+      url: URL.createObjectURL(file),
+      bytes: file,
+    }));
+    setPictures(pictureData);
+  };
+
+  // Remove a picture from the list
+  const removePicture = (index) => {
+    setPictures(pictures.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
-    var formData = new FormData()
-    formData.append('categoryid', categoryId)
-    formData.append('subcategoryid', subCategoryId)
-    formData.append('productname', productName)
-    formData.append('price', price)
-    formData.append('offerprice', offerPrice)
-    formData.append('stock', stock)
-    formData.append('description', description)
-    formData.append('rating', rating)
-    formData.append('status', status)
-    formData.append('salestatus', saleStatus)
-    formData.append('icon', icon.bytes)
+    // Create the product data object
+    const productData = {
+      categoryid: categoryId,
+      subcategoryid: subCategoryId,
+      productname: productName,
+      price: price,
+      offerprice: offerPrice,
+      stock: stock,
+      description: description,
+      rating: rating,
+      status: status,
+      salestatus: saleStatus,
+    };
 
-    var result = await postData('product/add_new_product', formData, true)
+    // Create FormData
+    const formData = new FormData();
 
-    if (result.status) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Record Submitted Successfully',
-      })
-    }
-    else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Something went wrong!',
-      })
+    // Add product data as JSON string
+    formData.append("data", JSON.stringify(productData));
+
+    // Add icon file
+    if (icon.bytes) {
+      formData.append("icon", icon.bytes);
     }
 
-    setProductName('')
-    setPrice('')
-    setOfferPrice('')
-    setStock('')
-    setDescription('')
-    setRating('')
-    setStatus('')
-    setSaleStatus('')
-    setIcon({ url: '/icon.png', bytes: '' })
-  }
+    // Add multiple picture files
+    pictures.forEach((picture, index) => {
+      if (picture.bytes) {
+        formData.append("picture", picture.bytes);
+      }
+    });
+
+    try {
+      const result = await postData(
+        "api/products/add_new_product",
+        formData,
+        true
+      );
+      if (result.status) {
+        Swal.fire({
+          icon: "success",
+          title: "Product Added Successfully",
+        });
+        handleReset();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: result.error || "Something went wrong!",
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting product:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while submitting the product.",
+      });
+    }
+  };
 
   const handleReset = () => {
-    setProductName('')
-    setPrice('')
-    setOfferPrice('')
-    setStock('')
-    setDescription('')
-    setRating('')
-    setStatus('')
-    setSaleStatus('')
-    setIcon({ url: '/icon.png', bytes: '' })
-  }
+    setCategoryId("");
+    setSubCategoryId("");
+    setProductName("");
+    setPrice("");
+    setOfferPrice("");
+    setStock("");
+    setDescription("");
+    setRating("");
+    setStatus("");
+    setSaleStatus("");
+    setIcon({ url: "/icon.png", bytes: "" });
+    setPictures([]); // Reset pictures
+    setSubCategoryList([]);
+  };
 
   return (
     <div className={classes.mainContainer}>
       <div className={classes.box}>
-        <Grid container className={classes.gridStyle} spacing={2}>
-          <Grid item xs={12} style={{ display: 'flex' }}>
-            <div className={classes.headingText}>
-              Product Interface
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', width: '69%' }}>
-              <Avatar src={'/report.png'} variant="square" style={{ width: 39 }} onClick={() => navigate('/dashboard/displayallproduct')} />
+        <Grid container spacing={2}>
+          <Grid item xs={12} style={{ display: "flex" }}>
+            <div className={classes.headingText}>Product Interface</div>
+            <div style={{ marginLeft: "auto" }}>
+              <Avatar
+                src={"/report.png"}
+                variant="square"
+                style={{ width: 39 }}
+                onClick={() => navigate("/dashboard/displayallproduct")}
+              />
             </div>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Category</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={categoryId}
-                label="Category"
-                onChange={handleCategoryChange}
-              >
-                <MenuItem>Choose Category</MenuItem>
-                {fillCategories()}
+              <InputLabel>Category</InputLabel>
+              <Select value={categoryId} onChange={handleCategoryChange}>
+                <MenuItem value="">
+                  <em>Choose Category</em>
+                </MenuItem>
+                {categoryList.map((item) => (
+                  <MenuItem key={item.categoryid} value={item.categoryid}>
+                    {item.categoryname}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label1">SubCategory</InputLabel>
+              <InputLabel>SubCategory</InputLabel>
               <Select
-                labelId="demo-simple-select-label1"
-                id="demo-simple-select1"
                 value={subCategoryId}
-                label="SubCategory"
-                onChange={handleSubCategoryChange}
+                onChange={(e) => setSubCategoryId(e.target.value)}
               >
-                <MenuItem>Choose SubCategory</MenuItem>
-                {fillSubCategories()}
+                <MenuItem value="">
+                  <em>Choose SubCategory</em>
+                </MenuItem>
+                {subCategoryList.map((item) => (
+                  <MenuItem key={item.subcategoryid} value={item.subcategoryid}>
+                    {item.subcategoryname}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
-            <TextField value={productName} fullWidth onChange={(event) => setProductName(event.target.value)} variant="outlined" label="Product Name" />
+            <TextField
+              fullWidth
+              label="Product Name"
+              variant="outlined"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+            />
           </Grid>
+
           <Grid item xs={6}>
-            <TextField fullWidth value={price} onChange={(event) => setPrice(event.target.value)} variant="outlined" label="Product Price" />
+            <TextField
+              fullWidth
+              label="Product Price"
+              variant="outlined"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
           </Grid>
+
           <Grid item xs={3}>
-            <TextField fullWidth value={offerPrice} onChange={(event) => setOfferPrice(event.target.value)} variant="outlined" label="Offer Price" />
+            <TextField
+              fullWidth
+              label="Offer Price"
+              variant="outlined"
+              value={offerPrice}
+              onChange={(e) => setOfferPrice(e.target.value)}
+            />
           </Grid>
+
           <Grid item xs={3}>
-            <TextField fullWidth value={stock} onChange={(event) => setStock(event.target.value)} variant="outlined" label="Stock" />
+            <TextField
+              fullWidth
+              label="Stock"
+              variant="outlined"
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+            />
           </Grid>
+
           <Grid item xs={6}>
-            <TextField fullWidth value={description} onChange={(event) => setDescription(event.target.value)} variant="outlined" label="Description" />
+            <TextField
+              fullWidth
+              label="Description"
+              variant="outlined"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </Grid>
+
           <Grid item xs={4}>
-            <TextField fullWidth value={rating} onChange={(event) => setRating(event.target.value)} variant="outlined" label="Rating" />
+            <TextField
+              fullWidth
+              label="Rating"
+              variant="outlined"
+              value={rating}
+              onChange={(e) => setRating(e.target.value)}
+            />
           </Grid>
+
           <Grid item xs={4}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Status</InputLabel>
+              <InputLabel>Status</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
                 value={status}
-                label="Status"
-                onChange={(event) => setStatus(event.target.value)}
+                onChange={(e) => setStatus(e.target.value)}
               >
-                <MenuItem value={'Continue'}>Continue</MenuItem>
-                <MenuItem value={'Discontinue'}>Discontinue</MenuItem>
+                <MenuItem value="Continue">Continue</MenuItem>
+                <MenuItem value="Discontinue">Discontinue</MenuItem>
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={4}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Sale Status</InputLabel>
+              <InputLabel>Sale Status</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
                 value={saleStatus}
-                label="Sale Status"
-                onChange={(event) => setSaleStatus(event.target.value)}
+                onChange={(e) => setSaleStatus(e.target.value)}
               >
-                <MenuItem value={'Trending'}>Trending</MenuItem>
-                <MenuItem value={'Popular'}>Popular</MenuItem>
+                <MenuItem value="Trending">Trending</MenuItem>
+                <MenuItem value="Popular">Popular</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={6} className={classes.center}>
-            <Button variant="contained" component="label" color="primary" fullWidth onChange={handleIcon}>
-              Upload
-              <input hidden accept="image/*" multiple type="file" />
+
+          {/* Icon Upload */}
+          <Grid item xs={6}>
+            <Button variant="contained" component="label" fullWidth>
+              Upload Icon
+              <input
+                hidden
+                accept="image/*"
+                type="file"
+                onChange={handleIcon}
+              />
             </Button>
           </Grid>
+
           <Grid item xs={6} className={classes.center}>
             <Avatar
               alt="Product Icon"
@@ -238,15 +343,79 @@ export default function Product() { // style
               variant="square"
             />
           </Grid>
-          <Grid item xs={6}>
-            <Button onClick={handleSubmit} fullWidth variant="contained" color="primary">Submit</Button>
+
+          {/* Multiple Pictures Upload */}
+          <Grid item xs={12}>
+            <Button variant="contained" component="label" fullWidth>
+              Upload Product Pictures (Multiple)
+              <input
+                hidden
+                accept="image/*"
+                type="file"
+                multiple
+                onChange={handlePictures}
+              />
+            </Button>
           </Grid>
+
+          {/* Display uploaded pictures with remove option */}
+          {pictures.length > 0 && (
+            <Grid item xs={12}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                {pictures.map((picture, index) => (
+                  <div key={index} style={{ position: "relative" }}>
+                    <Avatar
+                      src={picture.url}
+                      style={{ width: 80, height: 80 }}
+                      variant="square"
+                    />
+                    <Button
+                      size="small"
+                      color="secondary"
+                      onClick={() => removePicture(index)}
+                      style={{
+                        position: "absolute",
+                        top: -5,
+                        right: -5,
+                        minWidth: "20px",
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        backgroundColor: "red",
+                        color: "white",
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </Grid>
+          )}
+
           <Grid item xs={6}>
-            <Button fullWidth onClick={handleReset} variant="contained" color="primary">Reset</Button>
+            <Button
+              onClick={handleSubmit}
+              fullWidth
+              variant="contained"
+              color="primary"
+            >
+              Submit
+            </Button>
+          </Grid>
+
+          <Grid item xs={6}>
+            <Button
+              onClick={handleReset}
+              fullWidth
+              variant="contained"
+              color="primary"
+            >
+              Reset
+            </Button>
           </Grid>
         </Grid>
       </div>
     </div>
-  )
-
+  );
 }

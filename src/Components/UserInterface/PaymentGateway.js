@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { withStyles } from "@material-ui/core/styles";
 import { useDispatch, useSelector } from "react-redux";
 import { ServerURL, postData } from "../Services/NodeServices";
 import { useNavigate } from "react-router";
@@ -12,104 +11,127 @@ const override = css`
   border-color: red;
 `;
 
-const styles = (theme) => ({
-  root: {
-    width: "100%",
-    marginTop: theme.spacing.unit * 3,
-    overflowX: "auto",
-  },
-  table: {
-    minWidth: 700,
-  },
-});
-
-const PaymentGateway = (props) => {
-  let [loading, setLoading] = useState(true);
-  let [color, setColor] = useState("#36D7B7");
-
+const PaymentGateway = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const user = useSelector((state) => state.user);
-  const userData = Object.values(user)[0];
-
+  // Get cart data from Redux store
   const cart = useSelector((state) => state.cart);
-  const values = Object.values(cart);
+  const user = useSelector((state) => state.user);
+  const userData = Object.values(user)[0] || {};
 
-  /** 🔹 Calculate total payable amount */
-  const totalPayableAmount = (a, b) => {
-    const price =
-      b.offerprice > 0 ? b.offerprice * Number(b.qty) : b.price * Number(b.qty);
-    return a + price;
-  };
+  // Calculate total amount
+  const tpay = Object.values(cart).reduce((total, item) => {
+    const price = item.offerprice > 0 ? item.offerprice : item.price;
+    return total + price * item.qty;
+  }, 0);
 
-  /** 🔹 Calculate actual amount without discount */
-  const actualAmount = (a, b) => a + b.price * Number(b.qty);
+  // Handle payment success
+  const handlePaymentSuccess = async (paymentId) => {
+    try {
+      setLoading(true);
+      
+      const products = Object.values(cart).map((item) => ({
+        productId: item._id,
+        quantity: item.qty,
+        price: item.offerprice > 0 ? item.offerprice : item.price
+      }));
 
-  const tpay = values.reduce(totalPayableAmount, 0);
-  const aamt = values.reduce(actualAmount, 0);
+      const orderData = {
+        userId: userData._id,
+        products,
+        paymentId,
+        amount: tpay,
+        email: userData.emailid,
+        status: "COMPLETED"
+      };
 
-  console.log("Cart:", cart);
-  console.log("Actual Amount (aamt):", aamt);
-  console.log("Total Payable (tpay):", tpay);
+      const result = await postData("api/orders/create", orderData);
 
-  const options = {
-    key: "rzp_test_GQ6XaPC6gMPNwH",
-    amount: tpay * 100, // ✅ Corrected amount
-    name: "TheUltimateGarments.com",
-    image: `${ServerURL}/images/logo.png`,
-    handler: async function (response) {
-      alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
-
-      const result = await postData("userinterface/submit_orders", {
-        userid: userData.mobilenumber,
-        mobilenumber: userData.mobilenumber,
-        emailid: userData.emailid,
-        orderdate: new Date(),
-        products: cart,
-      });
-
-      if (result.status) {
-        alert("Order Submitted Successfully!");
+      if (result?.id) {
         dispatch({ type: "EMPTY_CART", payload: [] });
-        window.location.href = "http://localhost:3000/home";
-      } else {
-        alert("Failed to submit order. Please try again.");
+        navigate("/order-confirmation", { 
+          state: { 
+            orderId: result.id,
+            amount: tpay,
+            paymentId 
+          } 
+        });
       }
-    },
-    prefill: {
-      name: `${userData.firstname} ${userData.lastname}`,
-      contact: userData.mobilenumber,
-      email: userData.emailid,
-    },
-    theme: {
-      color: "#51cccc",
-      hide_topbar: false,
-    },
+    } catch (err) {
+      console.error("Order submission failed:", err);
+      setError("Payment successful but order failed");
+      setLoading(false);
+    }
   };
 
-  const openPayModal = async () => {
-    const rzp1 = new window.Razorpay(options);
-    await rzp1.open();
-    setLoading(false);
+  // Initialize payment immediately
+  const initializePayment = () => {
+    try {
+      const options = {
+        key: "rzp_test_t4LUM04KXw6wHc",
+        amount: Math.round(tpay * 100),
+        currency: "INR",
+        name: "TheUltimateGarments.com",
+        description: "Order Payment",
+        image: `${ServerURL}/images/logo.png`,
+        handler: (response) => {
+          handlePaymentSuccess(response.razorpay_payment_id);
+        },
+        theme: {
+          color: "#51cccc"
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("Payment error:", err);
+      setError("Failed to initialize payment");
+      setLoading(false);
+    }
   };
 
+  // Load Razorpay script and initialize payment on mount
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
+    if (!window.Razorpay) {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => {
+        setLoading(false);
+        initializePayment();
+      };
+      script.onerror = () => {
+        setError("Failed to load payment gateway");
+        setLoading(false);
+      };
+      document.body.appendChild(script);
+    } else {
+      setLoading(false);
+      initializePayment();
+    }
   }, []);
 
-  const { classes } = props;
+  if (error) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px" }}>
+        <h2 style={{ color: "red" }}>{error}</h2>
+        <button onClick={() => navigate("/mycart")}>
+          Return to Cart
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2 style={{ color: "gray" }}>Redirecting to Razorpay, please wait...</h2>
-      <SyncLoader color={color} loading={loading} css={override} size={25} />
-      {openPayModal()}
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h2>Processing your payment...</h2>
+      <SyncLoader color="#36D7B7" loading={loading} css={override} size={15} />
     </div>
   );
 };
 
-export default withStyles(styles)(PaymentGateway);
+export default PaymentGateway;

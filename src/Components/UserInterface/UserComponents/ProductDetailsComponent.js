@@ -23,10 +23,7 @@ export default function ProductDetailsComponent(props) {
         }}
       >
         <div style={{ width: 330, height: 330, cursor: "pointer" }}>
-          <img
-            src={`${ServerURL}/images/${item.icon}`}
-            style={{ width: "95%", height: "95%" }}
-          />
+          <img src={`${item.icon}`} style={{ width: "95%", height: "95%" }} />
           <div
             style={{
               position: "absolute",

@@ -1,9 +1,9 @@
-import * as React from 'react';
-// App Bar 
-import AdminAppBar from './AdminAppBar';
+import * as React from "react";
+// App Bar
+import AdminAppBar from "./AdminAppBar";
 // Side List
-import SideList from './SideList';
-import { Routes, Route } from 'react-router-dom';
+import SideList from "./SideList";
+import { Routes, Route } from "react-router-dom";
 // Administration Component
 import Category from "./Category";
 import DisplayAllCategory from "./DisplayAllCategory";
@@ -15,66 +15,79 @@ import Size from "./Size";
 import DisplayAllSize from "./DisplayAllSize";
 import Color from "./Color";
 import DisplayAllColor from "./DisplayAllColor";
-import BannerImages from './BannerImages';
-import ProductImages from './ProductImages';
+import BannerImages from "./BannerImages";
+import ProductImages from "./ProductImages";
 // Jwt Required fn
-import { isValidAuth } from '../Services/NodeServices';
-import { useEffect,useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { isValidAuth } from "../Services/NodeServices";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Spinner from "./Spinner";
 
 export default function Dashboard(props) {
-  var navigate=useNavigate()
+  var navigate = useNavigate();
 
   // Jwt Manupilation..............
-  const [authState,setAuthState]=useState(false)
+  const [authState, setAuthState] = useState(false);
   const checkAuth = async () => {
-    var result = await isValidAuth()
+    var result = await isValidAuth();
     if (result.auth) {
-      setAuthState(true)
-    }
-    else {
-      setAuthState(false)
+      setAuthState(true);
+    } else {
+      setAuthState(false);
       // navigate('/adminlogin')
     }
-  }
+  };
   useEffect(function () {
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
   // ...............................
-
-
 
   return (
     <div>
-      {authState?
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+      {authState ? (
+        <div
+          style={{ width: "100%", display: "flex", flexDirection: "column" }}
+        >
+          <AdminAppBar />
 
-      <AdminAppBar />
-
-      <div style={{ display: 'flex' }}>
-        <div style={{ width: '15%' }}>
-          <SideList />
+          <div style={{ display: "flex" }}>
+            <div style={{ width: "15%" }}>
+              <SideList />
+            </div>
+            <div style={{ width: "75%" }}>
+              <Routes>
+                <Route element={<Category />} path="/category" />
+                <Route
+                  element={<DisplayAllCategory />}
+                  path="/displayallcategory"
+                />
+                <Route element={<SubCategory />} path="/subcategory" />
+                <Route
+                  element={<DisplayAllSubCategory />}
+                  path="/displayallsubcategory"
+                />
+                <Route element={<Product />} path="/product" />
+                <Route
+                  element={<DisplayAllProduct />}
+                  path="/displayallproduct"
+                />
+                <Route element={<Size />} path="/size" />
+                <Route element={<DisplayAllSize />} path="/displayallsize" />
+                <Route element={<Color />} path="/color" />
+                <Route element={<DisplayAllColor />} path="/displayallcolor" />
+                <Route element={<BannerImages />} path="/bannerimages" />
+                {/* <Route element={<ProductImages />} path="/productimages" /> */}
+              </Routes>
+            </div>
+          </div>
         </div>
-        <div style={{ width: '75%' }}>
-          <Routes>
-            <Route element={<Category />} path="/category" />
-            <Route element={<DisplayAllCategory />} path="/displayallcategory" />
-            <Route element={<SubCategory />} path="/subcategory" />
-            <Route element={<DisplayAllSubCategory />} path="/displayallsubcategory" />
-            <Route element={<Product />} path="/product" />
-            <Route element={<DisplayAllProduct />} path="/displayallproduct" />
-            <Route element={<Size />} path="/size" />
-            <Route element={<DisplayAllSize />} path="/displayallsize" />
-            <Route element={<Color />} path="/color" />
-            <Route element={<DisplayAllColor />} path="/displayallcolor" />
-            <Route element={<BannerImages />} path="/bannerimages" />
-            <Route element={<ProductImages />} path="/productimages" />
-          </Routes>
-        </div>
-      </div>
-
-    </div>:<><h1>Not a Valid User</h1></>
-    }</div>
-  )
-
+      ) : (
+        <>
+          <h1>
+            <Spinner />
+          </h1>
+        </>
+      )}
+    </div>
+  );
 }

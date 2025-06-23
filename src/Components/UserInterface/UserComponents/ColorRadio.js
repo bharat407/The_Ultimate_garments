@@ -1,51 +1,37 @@
 import { useState, useEffect } from "react";
 
 export default function ColorRadio(props) {
-  console.log("xxxxxxxxxxxxxxxxx", props);
+  const [selectedColor, setSelectedColor] = useState(null);
 
-  var selectedcolor = null;
-  const [colorName, setColorName] = useState("");
+  useEffect(() => {
+    if (props.colorName) {
+      setSelectedColor(props.colorName); // Ensure this is an object
+    }
+  }, [props.colorName]);
 
-  const handleColor = (cname) => {
-    setColorName(cname);
-
-    selectedcolor = cname;
-    props.onClick(selectedcolor);
+  const handleColor = (colorObj) => {
+    setSelectedColor(colorObj);
+    props.onClick(colorObj); // Pass whole object back to parent
   };
 
-  useEffect(function () {
-    if (props && props.colorName) {
-      setColorName(props.colorName);
-    }
-  }, []);
-
   const showColor = () => {
-    return Object.keys(props.colorlist).map((item) => {
+    return props.colorlist.map((colorObj, index) => {
+      const isSelected = selectedColor?.color === colorObj.color;
       return (
         <div
-          onClick={() => handleColor(item)}
+          key={index}
+          onClick={() => handleColor(colorObj)}
           style={{
-            fontSize: "15px",
-            verticalAlign: "center",
-            backgroundRepeat: " no-repeat",
-            backgroundPosition: "center",
-            textAlign: "center",
-            lineHeight: "39px",
-            cursor: "pointer",
-            boxShadow: "0 1px 3px 0 rgb(0 0 0 / 33%)",
-            padding: "1%",
-            border: ` ${
-              item == colorName ? "2px solid #51cccc" : "1px solid white"
-            }`,
-            margin: "1%",
-            width: "30px",
-            height: "30px",
+            width: 30,
+            height: 30,
             borderRadius: "50%",
-            display: "flex",
-            justifyContent: "center",
-            background: `${props.colorlist[item]}`,
+            backgroundColor: colorObj.colorCode || "#fff",
+            border: isSelected ? "3px solid #51cccc" : "1px solid #ddd",
+            cursor: "pointer",
+            marginRight: 8,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.33)",
           }}
-          value={item}
+          title={colorObj.color}
         ></div>
       );
     });
@@ -53,22 +39,18 @@ export default function ColorRadio(props) {
 
   return (
     <div>
-      <div style={{ paddingTop: "1%" }}>
-        <span>
-          <span
-            style={{
-              fontWeight: "400px",
-              fontSize: "20px",
-              paddingTop: "40px",
-            }}
-          >
-            Color :{" "}
-          </span>
-          <span style={{ color: "grey" }}>{colorName}</span>
+      <div style={{ paddingBottom: "10px" }}>
+        <span style={{ fontWeight: "600", fontSize: "16px" }}>Color: </span>
+        <span style={{ color: "grey", fontSize: "15px" }}>
+          {selectedColor?.color || "Select a color"}
         </span>
       </div>
       <div style={{ display: "flex", flexDirection: "row" }}>
-        {props.colorlist == null ? <>Pls Select Size....</> : showColor()}
+        {props.colorlist && props.colorlist.length > 0 ? (
+          showColor()
+        ) : (
+          <>Please select a size first...</>
+        )}
       </div>
     </div>
   );

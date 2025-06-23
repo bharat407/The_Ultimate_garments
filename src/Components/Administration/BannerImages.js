@@ -12,29 +12,40 @@ import Swal from "sweetalert2";
 import { DropzoneArea } from "material-ui-dropzone";
 
 export default function BannerImages(props) {
-  var classes = useStyles();
+  const classes = useStyles();
   const [getFiles, setFiles] = useState([]);
+  const [resetKey, setResetKey] = useState(Date.now()); // 👈 Used to force Dropzone reset
 
   const handleSubmit = async () => {
-    var formData = new FormData();
+    if (getFiles.length === 0) {
+      Swal.fire("Error", "Please upload at least one banner image", "error");
+      return;
+    }
 
+    const formData = new FormData();
     getFiles.forEach((item) => {
-      formData.append("picture", item); // Fix input name
+      formData.append("pictures", item); // ✅ Correct key
     });
 
-    var result = await postData("banner/add_new_pictures", formData, true);
+    try {
+      const result = await postData("api/banners/upload", formData, true); // ✅ Correct endpoint
 
-    if (result.status) {
-      Swal.fire({
-        icon: "success",
-        title: "Record Submitted Successfully",
-      });
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Something went wrong!",
-      });
+      if (result.status) {
+        Swal.fire({
+          icon: "success",
+          title: "Banners Uploaded Successfully",
+          html: result.data.bannerPictures
+            .map((url) => `<img src="${url}" width="100" style="margin:5px"/>`)
+            .join(""),
+        });
+
+        setFiles([]);
+        setResetKey(Date.now()); // 👈 Force DropzoneArea to re-render and clear
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      Swal.fire("Upload Failed", error.message, "error");
     }
   };
 
@@ -46,20 +57,18 @@ export default function BannerImages(props) {
     <div className={classes.mainContainer}>
       <div className={classes.box}>
         <Grid container className={classes.gridStyle} spacing={2}>
-          <Grid item xs={12} style={{ display: "flex" }}>
+          <Grid item xs={12}>
             <div className={classes.headingText}>Banner Images Interface</div>
           </Grid>
           <Grid item xs={12}>
             <DropzoneArea
+              key={resetKey} // 👈 Add key to reset component
               onChange={handleSave}
-              acceptedFiles={[
-                "image/jpg",
-                "image/png",
-                "image/bmp",
-                "image/webp",
-              ]}
-              filesLimit={5} // Ensure limit matches backend
+              acceptedFiles={["image/*"]}
+              filesLimit={5}
               maxFileSize={5000000}
+              showPreviewsInDropzone={true}
+              showFileNamesInPreview={true}
             />
           </Grid>
           <Grid item xs={12}>

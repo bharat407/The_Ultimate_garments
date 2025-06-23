@@ -1,263 +1,439 @@
-// Component
 import { Grid, Button, Avatar, TextField } from "@material-ui/core";
-// State and Effect fn
 import { useState, useEffect } from "react";
-// Style
 import { useStyles } from "./ColorCss";
-// Drop Down
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-// Services
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 import { getData, postData } from "../Services/NodeServices";
-// Sweet Alert
-import Swal from "sweetalert2"
-// Navigation
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-// Color Picker
-import ColorPicker from 'material-ui-color-picker'
+import ColorPicker from "material-ui-color-picker";
 
-export default function Color() { // style
-  var classes = useStyles()
-  //Navigate
-  var navigate = useNavigate()
+export default function Color() {
+  const classes = useStyles();
+  const navigate = useNavigate();
 
-  // State 
-  const [categoryList, setCategoryList] = useState([])
-  const [categoryId, setCategoryId] = useState()
-  const [subCategoryList, setSubCategoryList] = useState([])
-  const [subCategoryId, setSubCategoryId] = useState()
-  const [productList, setProductList] = useState([])
-  const [productId, setProductId] = useState()
-  const [sizeList, setSizeList] = useState([])
-  const [size, setSize] = useState()
-  const [color, setColor] = useState()
-  const [colorCode, setColorCode] = useState()
-  const [colorList, setColorList] = useState({})
+  // State
+  const [categoryList, setCategoryList] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
+  const [subCategoryList, setSubCategoryList] = useState([]);
+  const [subCategoryId, setSubCategoryId] = useState("");
+  const [productList, setProductList] = useState([]);
+  const [productId, setProductId] = useState("");
+  const [dimensionList, setDimensionList] = useState([]);
+  const [selectedDimension, setSelectedDimension] = useState(null);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [color, setColor] = useState("");
+  const [colorCode, setColorCode] = useState("#000000");
+  const [loading, setLoading] = useState(false);
 
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchAllCategory();
+  }, []);
 
-  // Category DropDown Manupilation
-  const handleCategoryChange = async (event) => {
-    setCategoryId(event.target.value)
-    fetchAllSubCategory(event.target.value)
-    fetchAllProduct(null, null)
-    fetchAllSize(null, null, null)
-  }
   const fetchAllCategory = async () => {
-    var result = await getData('category/display_all_category')
-    setCategoryList(result.data)
-  }
-  useEffect(function () {
-    fetchAllCategory()
-  }, [])
-  const fillCategories = () => {
-    return categoryList.map((item) => {
-      return (
-        <MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
-      )
-    })
-  }
-  // ..............................  
-  // SubCategory DropDown Manupilation
-  const handleSubCategoryChange = (event) => {
-    setSubCategoryId(event.target.value)
-    fetchAllProduct(categoryId, event.target.value)
-    fetchAllSize(null, null, null)
-  }
+    try {
+      setLoading(true);
+      const result = await getData("category/display_all_category");
+      setCategoryList(result.categories || []);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load categories",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchAllSubCategory = async (cid) => {
-    var body = { categoryid: cid }
-    var result = await postData('subcategory/fetch_all_subcategory', body)
-    setSubCategoryList(result.data)
-  }
-  const fillSubCategories = () => {
-    return subCategoryList.map((item) => {
-      return (
-        <MenuItem value={item.subcategoryid}>{item.subcategoryname}</MenuItem>
-      )
-    })
-  }
-  // ...............................
-  // Product DropDown Manupilation
-  const handleProductChange = (event) => {
-    setProductId(event.target.value)
-    fetchAllSize(categoryId, subCategoryId, event.target.value)
-  }
+    try {
+      setLoading(true);
+      const result = await getData(`subcategory/by-category/${cid}`);
+      setSubCategoryList(result || []);
+    } catch (error) {
+      console.error("Failed to fetch subcategories:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchAllProduct = async (cid, sid) => {
-    var body = { categoryid: cid, subcategoryid: sid }
-    var result = await postData('product/fetch_all_product', body)
-    setProductList(result.data)
-  }
-  const fillProducts = () => {
-    return productList.map((item) => {
-      return (
-        <MenuItem value={item.productid}>{item.productname}</MenuItem>
-      )
-    })
-  }
-  // ...............................
-  // Size DropDown Manupilation
+    try {
+      const body = { categoryid: cid, subcategoryid: sid };
+      const result = await postData("api/products/fetch_all_product", body);
+      if (Array.isArray(result?.data)) {
+        setProductList(result.data);
+      } else if (Array.isArray(result)) {
+        setProductList(result);
+      } else {
+        console.error("Unexpected product response format:", result);
+        setProductList([]);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setProductList([]);
+    }
+  };
+
   const fetchAllSize = async (cid, sid, pid) => {
-    var body = { categoryid: cid, subcategoryid: sid, productid: pid }
-    var result = await postData('size/fetch_all_size', body)
+    try {
+      setLoading(true);
+      const body = { categoryid: cid, subcategoryid: sid, productid: pid };
+      console.log("Request body:", body); // Debug log
 
-    setSizeList(result.data)
-  }
-  const fillSize = () => {
-    return sizeList.map((item) => {
-      return (
-        <MenuItem value={item}>{item}</MenuItem>
-      )
-    })
-  }
-  // ...............................
-  // Color Change
-  const handleColorChange = (event) => {
-    setColorCode(event)
-  }
-  // Add Color
-  const handleAddColor = () => {
-    var temp = colorList
+      const result = await postData(
+        "api/dimensions/fetch_all_dimensions",
+        body
+      );
+      console.log("Response received:", result); // Debug log
 
-    setColorList({ ...temp, [color]: colorCode })
+      if (Array.isArray(result)) {
+        setDimensionList(result);
+      } else if (result?.data && Array.isArray(result.data)) {
+        setDimensionList(result.data);
+      } else {
+        console.error("Unexpected dimension response format:", result);
+        setDimensionList([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch dimensions:", error);
+      setDimensionList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  }
+  const handleCategoryChange = (event) => {
+    const value = event.target.value;
+    setCategoryId(value);
+    fetchAllSubCategory(value);
+    setSubCategoryId("");
+    setProductId("");
+    setSelectedDimension(null);
+    setSelectedSize("");
+    setProductList([]);
+    setDimensionList([]);
+  };
+
+  const handleSubCategoryChange = (event) => {
+    const value = event.target.value;
+    setSubCategoryId(value);
+    fetchAllProduct(categoryId, value);
+    setProductId("");
+    setSelectedDimension(null);
+    setSelectedSize("");
+    setDimensionList([]);
+  };
+
+  const handleProductChange = (event) => {
+    const value = event.target.value;
+    setProductId(value);
+    fetchAllSize(categoryId, subCategoryId, value);
+    setSelectedDimension(null);
+    setSelectedSize("");
+  };
+
+  const handleSizeChange = (event) => {
+    const sizeValue = event.target.value;
+    setSelectedSize(sizeValue);
+
+    const dimension = dimensionList.find((dim) =>
+      dim.dimension.includes(sizeValue)
+    );
+    setSelectedDimension(dimension);
+  };
+
+  const handleColorChange = (color) => {
+    console.log("Color received:", color); // Debug log
+    if (typeof color === "string") {
+      setColorCode(color);
+    } else if (color && color.hex) {
+      setColorCode(color.hex);
+    } else if (color && typeof color === "object") {
+      const hex = `#${((1 << 24) + (color.r << 16) + (color.g << 8) + color.b)
+        .toString(16)
+        .slice(1)}`;
+      setColorCode(hex);
+    }
+  };
 
   const handleSubmit = async () => {
-    var body = { categoryid: categoryId, subcategoryid: subCategoryId, productid: productId, size: size, color: JSON.stringify(colorList) }
+    try {
+      if (
+        !categoryId ||
+        !subCategoryId ||
+        !productId ||
+        !selectedSize ||
+        !selectedDimension ||
+        !color ||
+        !colorCode
+      ) {
+        Swal.fire({
+          icon: "warning",
+          title: "Warning",
+          text: "Please fill all required fields",
+        });
+        return;
+      }
 
-    var result = await postData('color/add_new_color', body)
+      const body = {
+        categoryid: categoryId,
+        subcategoryid: subCategoryId,
+        productid: productId,
+        dimensionid: selectedDimension.dimensionid,
+        size: selectedSize,
+        sizeid: selectedDimension.dimensionid,
+        color: color,
+        colorCode: colorCode,
+      };
 
-    if (result.status) {
+      console.log("Submitting color with body:", body); // Debug log
+      const result = await postData("api/colors/add_new_color", body);
+
+      if (result.colorid) {
+        Swal.fire({
+          icon: "success",
+          title: "Color Added Successfully",
+        });
+        handleReset();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: result.error || "Something went wrong!",
+        });
+      }
+    } catch (error) {
+      console.error("Error during submission:", error); // Debug log
       Swal.fire({
-        icon: 'success',
-        title: 'Record Submitted Successfully',
-      })
+        icon: "error",
+        title: "Error",
+        text: "Failed to add color. Please try again.",
+      });
     }
-    else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Something went wrong!',
-      })
-    }
-    setColor('')
-    setColorList({})
-  }
+  };
 
   const handleReset = () => {
-    setColor('')
-    setColorList({})
-  }
+    setCategoryId("");
+    setSubCategoryId("");
+    setProductId("");
+    setSelectedSize("");
+    setSelectedDimension(null);
+    setColor("");
+    setColorCode("#000000");
+    setSubCategoryList([]);
+    setProductList([]);
+    setDimensionList([]);
+  };
 
+  const fillCategories = () => {
+    return categoryList.map((item) => (
+      <MenuItem
+        key={item._id || item.categoryid}
+        value={item._id || item.categoryid}
+      >
+        {item.categoryname}
+      </MenuItem>
+    ));
+  };
+
+  const fillSubCategories = () => {
+    return subCategoryList.map((item) => (
+      <MenuItem
+        key={item._id || item.subcategoryid}
+        value={item._id || item.subcategoryid}
+      >
+        {item.subcategoryname}
+      </MenuItem>
+    ));
+  };
+
+  const fillProducts = () => {
+    return productList.map((item) => {
+      const productId = item.id || item.productid;
+      return (
+        <MenuItem key={productId} value={productId}>
+          {item.productname}
+        </MenuItem>
+      );
+    });
+  };
+
+  const fillSizes = () => {
+    const allSizes = new Set();
+
+    dimensionList.forEach((dimension) => {
+      if (dimension.dimension && Array.isArray(dimension.dimension)) {
+        dimension.dimension.forEach((size) => {
+          allSizes.add(size);
+        });
+      }
+    });
+
+    return Array.from(allSizes).map((size) => (
+      <MenuItem key={size} value={size}>
+        {size}
+      </MenuItem>
+    ));
+  };
 
   return (
     <div className={classes.mainContainer}>
       <div className={classes.box}>
         <Grid container className={classes.gridStyle} spacing={2}>
-          <Grid item xs={12} style={{ display: 'flex' }}>
-            <div className={classes.headingText}>
-              Color Interface
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', width: '70%' }}>
-              <Avatar src={'/report.png'} variant="square" style={{ width: 39 }} onClick={() => navigate('/dashboard/displayallcolor')} />
+          <Grid item xs={12} style={{ display: "flex" }}>
+            <div className={classes.headingText}>Color Interface</div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                width: "70%",
+              }}
+            >
+              <Avatar
+                src={"/report.png"}
+                variant="square"
+                style={{ width: 39 }}
+                onClick={() => navigate("/dashboard/displayallcolor")}
+              />
             </div>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Category</InputLabel>
+              <InputLabel>Category</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
                 value={categoryId}
-                label="Category"
                 onChange={handleCategoryChange}
+                disabled={loading}
               >
-                <MenuItem>Choose Category</MenuItem>
+                <MenuItem disabled value="">
+                  Choose Category
+                </MenuItem>
                 {fillCategories()}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label1">SubCategory</InputLabel>
+              <InputLabel>SubCategory</InputLabel>
               <Select
-                labelId="demo-simple-select-label1"
-                id="demo-simple-select1"
                 value={subCategoryId}
-                label="SubCategory"
                 onChange={handleSubCategoryChange}
+                disabled={!categoryId || loading}
               >
-                <MenuItem>Choose SubCategory</MenuItem>
+                <MenuItem disabled value="">
+                  Choose SubCategory
+                </MenuItem>
                 {fillSubCategories()}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Product</InputLabel>
+              <InputLabel>Product</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
                 value={productId}
-                label="Product"
                 onChange={handleProductChange}
+                disabled={!subCategoryId || loading}
               >
-                <MenuItem>Choose Product</MenuItem>
+                <MenuItem disabled value="">
+                  Choose Product
+                </MenuItem>
                 {fillProducts()}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Size</InputLabel>
+              <InputLabel>Size</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={size}
-                label="Size"
-                onChange={(event) => setSize(event.target.value)}
+                value={selectedSize}
+                onChange={handleSizeChange}
+                disabled={!productId || loading || dimensionList.length === 0}
               >
-                <MenuItem>Choose Size</MenuItem>
-                {fillSize()}
+                <MenuItem disabled value="">
+                  Choose Size
+                </MenuItem>
+                {fillSizes()}
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={4}>
-            <TextField value={color} variant="outlined" label="Color Name" fullWidth onChange={(event) => setColor(event.target.value)} />
-          </Grid>
-          <Grid item xs={4}>
-            <ColorPicker
-              name='color'
-              defaultValue='#Color'
-              variant='outlined'
+
+          <Grid item xs={6}>
+            <TextField
+              value={color}
+              variant="outlined"
+              label="Color Name"
               fullWidth
-              value={colorCode} //- for controlled component
-              onChange={(code) => handleColorChange(code)}
+              onChange={(e) => setColor(e.target.value)}
+              disabled={loading}
             />
           </Grid>
-          <Grid item xs={4} className={classes.center}>
-            <Button onClick={handleAddColor} fullWidth variant="contained" color="primary">Set</Button>
-          </Grid>
-          <Grid item xs={12}>
-            <TextField value={JSON.stringify(colorList)} onChange={(event) => setColorList(event.target.value)} variant="outlined" fullWidth label="Color List" />
-          </Grid>
+
           <Grid item xs={6}>
-            <Button onClick={handleSubmit} fullWidth variant="contained" color="primary">Submit</Button>
+            <TextField
+              label="Color Code"
+              variant="outlined"
+              fullWidth
+              value={colorCode}
+              onChange={(e) => setColorCode(e.target.value)}
+              disabled={loading}
+              InputProps={{
+                endAdornment: (
+                  <input
+                    type="color"
+                    value={colorCode}
+                    onChange={(e) => setColorCode(e.target.value)}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      border: "none",
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      marginLeft: 8,
+                    }}
+                    disabled={loading}
+                  />
+                ),
+              }}
+              placeholder="#000000"
+            />
           </Grid>
+
           <Grid item xs={6}>
-            <Button fullWidth onClick={handleReset} variant="contained" color="primary">Reset</Button>
+            <Button
+              fullWidth
+              onClick={handleSubmit}
+              variant="contained"
+              color="primary"
+              disabled={loading}
+            >
+              {loading ? "Processing..." : "Submit"}
+            </Button>
+          </Grid>
+
+          <Grid item xs={6}>
+            <Button
+              fullWidth
+              onClick={handleReset}
+              variant="contained"
+              color="secondary"
+              disabled={loading}
+            >
+              Reset
+            </Button>
           </Grid>
         </Grid>
       </div>
     </div>
-  )
-
+  );
 }
-
-
-
-
-
-
-

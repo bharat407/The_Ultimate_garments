@@ -37,7 +37,7 @@ export default function ProductImages(props) {
 
   const fetchAllSubCategory = async (cid) => {
     try {
-      const result = await postData("subcategory/fetch_all_subcategory", {
+      const result = await postData("subcategory/all", {
         categoryid: cid,
       });
       setSubCategoryList(result.data || []);
@@ -52,7 +52,7 @@ export default function ProductImages(props) {
 
     try {
       setLoading(true);
-      const result = await postData("product/fetch_all_product", {
+      const result = await postData("api/products/fetch_all_product", {
         categoryid: cid,
         subcategoryid: sid,
       });
@@ -77,7 +77,7 @@ export default function ProductImages(props) {
 
     try {
       setLoading(true);
-      const result = await postData("userinterface/fetchallpictures", {
+      const result = await postData("api/products/fetchallpictures", {
         categoryid: cid,
         subcategoryid: sid,
         productid: pid,

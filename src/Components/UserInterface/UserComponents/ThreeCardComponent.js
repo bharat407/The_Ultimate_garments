@@ -24,7 +24,7 @@ export default function ThreeCardComponent(props) {
       >
         <img
           title={item.subcategoryname}
-          src={`${ServerURL}/images/${item.icon}`}
+          src={`${item.icon}`}
           style={{ width: "100%", height: "100%" }}
         />
         <div

@@ -1,191 +1,191 @@
 import React, { useState, useEffect } from "react";
-import { Button, Grid } from '@mui/material';
-import DiscountIcon from '@mui/icons-material/Discount';
-import TextField from '@mui/material/TextField';
+import {
+  Button,
+  Grid,
+  CircularProgress,
+  TextField,
+} from "@mui/material";
+import DiscountIcon from "@mui/icons-material/Discount";
 import Signup from "./Signup";
 import { useNavigate } from "react-router";
-import { postData } from "../../Services/NodeServices";
+import { postData, isValidAuth } from "../../Services/NodeServices";
 import Swal from "sweetalert2";
 import { useSelector } from "react-redux";
+import CheckoutWithAddress from "../CheckoutWithAddress"; // Import the address component
 
 export default function CouponAndPriceDetail(props) {
-  var navigate = useNavigate()
-  var user = useSelector(state => state.user)
-  var userDataKeys = Object.keys(user)
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.user);
 
-  const [userAddress, setUserAddress] = useState({})
-  const fetchUserAddress = async () => {
-    var result = await postData("userinterface/check_user_address", { userid: props?.userData.mobilenumber })
-    if (result.status) {
-      setUserAddress(result)
-      console.log('UUUUUUUUUUUUUUUUUUUUUUUUU:', userAddress)
+  const [userAddress, setUserAddress] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [authState, setAuthState] = useState(false);
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false); // State for address dialog
+
+  // ✅ Check JWT token on mount
+  const checkAuth = async () => {
+    const token = localStorage.getItem("token");
+    console.log("Token from localStorage:", token);
+
+    const result = await isValidAuth();
+    console.log("Auth check result:", result);
+
+    if (result.auth) {
+      setAuthState(true);
+    } else {
+      setAuthState(false);
     }
-  }
+  };
 
-  useEffect(function () {
-    fetchUserAddress()
-  }, [])
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      checkAuth();
+    }, 100); // slight delay to ensure token is saved
 
-  const [show, setShow] = useState(false)
-  const [open, setOpen] = useState(false)
+    return () => clearTimeout(timeout);
+  }, []);
 
-  var values = props.value
-  const totalPayableAmount = (a, b) => {
-    var price = 0
-    if (b.offerprice > 0)
-      price = b.offerprice * b.qty
-    else
-      price = b.price * b.qty
-    return a + price
-  }
-  const actualAmount = (a, b) => {
-    return a + b.price * b.qty
-  }
-
-  var tpay = values.reduce(totalPayableAmount, 0)
-  var aamt = values.reduce(actualAmount, 0)
-
-  const handleClick = () => {
-    if (props.page == "Cart") {
-      if (userDataKeys.length == 0) {
-        setOpen(true)
+  // ✅ Fetch user address only if logged in
+  useEffect(() => {
+    const fetchUserAddress = async () => {
+      try {
+        setLoading(true);
+        const result = await postData(`address/display_email/${user.email}`); // Use email
+        setUserAddress(result);
+      } catch (error) {
+        Swal.fire("Error", "Failed to fetch address", "error");
+      } finally {
+        setLoading(false);
       }
-      else {
-        navigate('/address')
-      }
+    };
+
+    if (user.email) { // Use email
+      fetchUserAddress();
     }
-    else if (props.page == "Address") {
-      fetchUserAddress()
-      var keys = Object.keys(userAddress)
-      alert(keys.length)
-      if (keys.length != 0) {
-        navigate('/paymentgateway')
-      }
-      else {
-        Swal.fire('Pls Input a Address First...!')
-      }
+  }, [user.email]); // Use email
+
+  // ✅ Checkout logic
+  const handleCheckout = () => {
+    if (!authState) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please login to continue",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+      setOpen(true);
+      return;
     }
-  }
+
+    // Open the address dialog instead of navigating directly
+    setAddressDialogOpen(true);
+  };
+
+  // 💰 Price calculation logic
+  const totalPayableAmount = (a, b) =>
+    a + (b.offerprice > 0 ? b.offerprice * b.qty : b.price * b.qty);
+  const actualAmount = (a, b) => a + b.price * b.qty;
+
+  const values = props.value || [];
+  const tpay = values.reduce(totalPayableAmount, 0);
+  const aamt = values.reduce(actualAmount, 0);
+
+  const closeAddressDialog = () => {
+    setAddressDialogOpen(false);
+  };
 
   return (
-    <div style={{ width: '100%' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', background: '#fff', width: '100%' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap',/* border:'2px solid #51CBCC', */margin: 20 }}>
+    <div style={{ width: "100%" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", background: "#fff", width: "100%" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", margin: 20 }}>
           <Grid container spacing={2}>
+            {/* Coupon section */}
             <Grid item xs={12}>
-              <div style={{ display: 'flex', textAlign: 'center' }}>
-                <DiscountIcon style={{ color: '#000', marginTop: 5 }} /> &nbsp;&nbsp;<span style={{ color: '#535353' }}>Have a coupon/referral code?</span>
+              <div style={{ display: "flex", textAlign: "center" }}>
+                <DiscountIcon style={{ color: "#000", marginTop: 5 }} />
+                &nbsp;&nbsp;
+                <span style={{ color: "#535353" }}>Have a coupon/referral code?</span>
               </div>
             </Grid>
             <Grid item xs={8}>
-              <div style={{ background: '#fff' }}>
-                <TextField
-                  color="secondary"
-                  margin="normal"
-                  fullWidth
-                  placeholder="Enter Code"
-                  disableUnderline={false}
-                  InputLabelProps="disableAnimation"
-                  size="small"
-                />
-              </div>
+              <TextField
+                color="secondary"
+                margin="normal"
+                fullWidth
+                placeholder="Enter Code"
+                size="small"
+              />
             </Grid>
             <Grid item xs={4}>
-              <div style={{ background: '#fff', marginTop: 7, padding: 9 }}>
-                <Button style={{ background: 'pink', color: 'black' }}>APPLY</Button>
-              </div>
+              <Button style={{ background: "pink", color: "black" }}>APPLY</Button>
             </Grid>
-            <Grid style={{ color: '#535353' }} item xs={5}>
-              ‣Flat ₹100 off on orders above ₹999 -
-            </Grid>
-            <Grid style={{ color: '#535353', fontWeight: 700 }} item xs={7}>
-              TUG100
-            </Grid>
-            {show ? null : <Grid style={{ color: '#535353', fontSize: 14, fontWeight: 700 }} item xs={12}>
-              <div onClick={() => setShow(true)} style={{ cursor: 'pointer' }}>Show more..</div>
-            </Grid>}
-            {show ?
-              <Grid style={{ color: '#535353' }} item xs={5}>
-                ‣Flat ₹200 off on orders above ₹1999 -
-              </Grid> : null}
-            {show ? <Grid style={{ color: '#535353', fontWeight: 700 }} item xs={7}>
-              TUG200
-            </Grid> : null}
 
-            {show ? <Grid style={{ color: '#535353' }} item xs={5}>
-              ‣Flat 250 off on orders above ₹2999 -
-            </Grid> : null}
-            {show ? <Grid style={{ color: '#535353', fontWeight: 700 }} item xs={7}>
-              TUG250
-            </Grid> : null}
+            {/* Price Details */}
+            <Grid item xs={12}>
+              <div style={{ fontWeight: 700, fontSize: 18 }}>PRICE DETAILS ({values.length} items)</div>
+            </Grid>
+            <Grid item xs={12}><hr color="#ABABAB" /></Grid>
 
-            {show ? <Grid style={{ color: '#535353' }} item xs={5}>
-              ‣Flat ₹400 off on orders above ₹3999 -
-            </Grid> : null}
-            {show ? <Grid style={{ color: '#535353', fontWeight: 700 }} item xs={7}>
-              TUG400
-            </Grid> : null}
+            <Grid item xs={6}><div>Total MRP (Inc. of Taxes)</div></Grid>
+            <Grid item xs={6}><div style={{ textAlign: "right" }}>₹{aamt}</div></Grid>
 
-            {show ? <Grid style={{ color: '#535353' }} item xs={12}>
-              <div onClick={() => setShow(false)} style={{ cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>Show Less</div>
-            </Grid> : null}
+            <Grid item xs={6}><div>Discount:</div></Grid>
+            <Grid item xs={6}><div style={{ textAlign: "right" }}>-₹{aamt - tpay}</div></Grid>
+
+            <Grid item xs={6}><div>Shipping</div></Grid>
+            <Grid item xs={6}><div style={{ textAlign: "right", color: "#2ecc71" }}>Free</div></Grid>
+
+            <Grid item xs={12}><hr color="#ABABAB" /></Grid>
+
+            <Grid item xs={6}><div style={{ fontWeight: 700, fontSize: 18 }}>Total Amount</div></Grid>
+            <Grid item xs={6}><div style={{ textAlign: "right", fontWeight: 700, fontSize: 18 }}>₹{tpay}</div></Grid>
+
             <Grid item xs={12}>
-              <div style={{ fontFamily: 'sans-serif', fontWeight: 700, fontSize: 18, marginTop: 7 }}>
-                PRICE DETAILS ({values.length} items)
-              </div>
-            </Grid>
-            <Grid item xs={12}>
-              <hr color="#ABABAB"></hr>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ fontFamily: 'sans-serif', fontSize: 16, color: '#000' }}>Total MRP (Inc. of Taxes)</div>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', fontFamily: 'sans-serif', fontSize: 16, color: '#000' }}> ₹{aamt}</div>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ fontFamily: 'sans-serif', fontSize: 16, color: '#000' }}>Discount:</div>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', fontFamily: 'sans-serif', fontSize: 16, color: '#000' }}> -₹{aamt - tpay}</div>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ fontFamily: 'sans-serif', fontSize: 16, color: '#000' }}>Shipping</div>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', fontFamily: 'sans-serif', fontSize: 16, color: '#2ecc71' }}> Free</div>
-            </Grid>
-            {/* <Grid item xs={6}>
-              <div style={{ fontFamily: 'sans-serif', fontSize: 16, color: '#000' }}>Cart Total</div>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', fontFamily: 'sans-serif', fontSize: 16, color: '#000' }}> ₹{tpay}</div>
-            </Grid> */}
-            <Grid item xs={12}>
-              <hr color="#ABABAB"></hr>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ fontFamily: 'sans-serif', fontWeight: 700, fontSize: 18, }}>Total Amount </div>
-            </Grid>
-            <Grid item xs={6}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', fontFamily: 'sans-serif', fontWeight: 700, fontSize: 18, }}>₹{tpay}</div>
-            </Grid>
-            <Grid item xs={12}>
-              <div style={{ display: 'flex', justifyContent: 'center', background: '#2ecc71', fontFamily: 'sans-serif', fontSize: 16, padding: 7, color: '#fff', letterSpacing: 1 }}>
+              <div style={{ textAlign: "center", background: "#2ecc71", color: "#fff", padding: 7 }}>
                 You Saved ₹{aamt - tpay} on this order
               </div>
             </Grid>
+
+            {/* Checkout Button */}
             <Grid item xs={12}>
-              <div onClick={handleClick} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-                <div style={{ boxShadow: '0px 0px 4px 0px grey', display: 'flex', justifyContent: 'center', background: '#51CBCC', fontSize: 25, fontWeight: 600, width: '70%', padding: 5, borderRadius: 5, color: '#fff', cursor: 'pointer' }}>
-                  CHECKOUT SECURELY
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <div
+                  onClick={handleCheckout}
+                  style={{
+                    boxShadow: "0px 0px 4px 0px grey",
+                    background: "#51CBCC",
+                    fontSize: 20,
+                    fontWeight: 600,
+                    width: "70%",
+                    padding: 10,
+                    borderRadius: 5,
+                    color: "#fff",
+                    cursor: "pointer",
+                    textAlign: "center",
+                  }}
+                >
+                  {loading ? (
+                    <CircularProgress size={24} style={{ color: "#fff" }} />
+                  ) : (
+                    "CHECKOUT SECURELY"
+                  )}
                 </div>
               </div>
             </Grid>
-
           </Grid>
         </div>
       </div>
-      <Signup open={open} />
-    </div>)
+
+      {/* Login Popup */}
+      <Signup open={open} setOpen={setOpen} />
+
+      {/* Address Selection Popup */}
+      <CheckoutWithAddress
+        open={addressDialogOpen}
+        onClose={closeAddressDialog}
+        totalAmount={tpay} // Pass the total amount
+      />
+    </div>
+  );
 }

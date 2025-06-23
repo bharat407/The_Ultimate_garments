@@ -1,25 +1,17 @@
-// Component
 import { Grid, Button, Avatar } from "@material-ui/core";
-// State and Effect fn
 import { useState, useEffect } from "react";
-// Style
 import { useStyles } from "./SizeCss";
-// Drop Down
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-// Services
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 import { getData, postData } from "../Services/NodeServices";
-// Sweet Alert
-import Swal from "sweetalert2"
-// Navigation
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-// Select Drop Down......
-import OutlinedInput from '@mui/material/OutlinedInput';
-import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
-import * as React from 'react';
+import OutlinedInput from "@mui/material/OutlinedInput";
+import ListItemText from "@mui/material/ListItemText";
+import Checkbox from "@mui/material/Checkbox";
+import * as React from "react";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -32,223 +24,314 @@ const MenuProps = {
   },
 };
 
-const names = [
-  'S',
-  'M',
-  'L',
-  'XS',
-  'XL',
-  'XXL',
-];
-//........................
+const names = ["S", "M", "L", "XS", "XL", "XXL"];
 
 export default function Size(props) {
+  const classes = useStyles();
+  const navigate = useNavigate();
 
-  // style
-  var classes = useStyles()
-  // Navigate
-  var navigate = useNavigate()
+  const [categoryList, setCategoryList] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
+  const [subCategoryList, setSubCategoryList] = useState([]);
+  const [subCategoryId, setSubCategoryId] = useState("");
+  const [productList, setProductList] = useState([]);
+  const [productId, setProductId] = useState("");
+  const [size, setSize] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // State 
-  const [categoryList, setCategoryList] = useState([])
-  const [categoryId, setCategoryId] = useState()
-  const [subCategoryList, setSubCategoryList] = useState([])
-  const [subCategoryId, setSubCategoryId] = useState()
-  const [productList, setProductList] = useState([])
-  const [productId, setProductId] = useState()
-  const [size, setSize] = useState([])
-
-  // Select Drop Down
   const handleChange = (event) => {
     const {
       target: { value },
     } = event;
-    setSize(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
-    );
+    setSize(typeof value === "string" ? value.split(",") : value);
   };
-  //.....................
 
-
-  // Category DropDown Manupilation
   const handleCategoryChange = async (event) => {
-    setCategoryId(event.target.value)
-    fetchAllSubCategory(event.target.value)
-    fetchAllProduct(null, null)
-  }
+    const selectedCategoryId = event.target.value;
+    setCategoryId(selectedCategoryId);
+    setSubCategoryId("");
+    setProductId("");
+    setSubCategoryList([]);
+    setProductList([]);
+
+    if (selectedCategoryId) {
+      fetchSubCategoriesByCategory(selectedCategoryId);
+    }
+  };
+
   const fetchAllCategory = async () => {
-    var result = await getData('category/display_all_category')
-    setCategoryList(result.data)
-  }
-  useEffect(function () {
-    fetchAllCategory()
-  }, [])
+    try {
+      const result = await getData("category/display_all_category");
+      if (Array.isArray(result)) {
+        setCategoryList(result);
+      } else if (result?.categories) {
+        setCategoryList(result.categories);
+      } else if (result?.data) {
+        setCategoryList(result.data);
+      } else {
+        console.error("Unexpected category response format:", result);
+        setCategoryList([]);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setCategoryList([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllCategory();
+  }, []);
+
+  const fetchSubCategoriesByCategory = async (categoryId) => {
+    try {
+      const result = await getData(`subcategory/by-category/${categoryId}`);
+      if (Array.isArray(result)) {
+        setSubCategoryList(result);
+      } else if (result?.status && result?.subcategory) {
+        setSubCategoryList([result.subcategory]);
+      } else if (result?.data) {
+        setSubCategoryList(result.data);
+      } else {
+        console.error("Unexpected subcategory response format:", result);
+        setSubCategoryList([]);
+      }
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+      setSubCategoryList([]);
+    }
+  };
+
   const fillCategories = () => {
-    return categoryList.map((item) => {
-      return (
-        <MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
-      )
-    })
-  }
-  // ..............................  
-  // SubCategory DropDown Manupilation
+    return categoryList.map((item) => (
+      <MenuItem key={item.categoryid} value={item.categoryid}>
+        {item.categoryname}
+      </MenuItem>
+    ));
+  };
+
   const handleSubCategoryChange = (event) => {
-    setSubCategoryId(event.target.value)
-    fetchAllProduct(categoryId, event.target.value)
-  }
-  const fetchAllSubCategory = async (cid) => {
-    var body = { categoryid: cid }
-    var result = await postData('subcategory/fetch_all_subcategory', body)
-    setSubCategoryList(result.data)
-  }
+    const selectedSubCategoryId = event.target.value;
+    setSubCategoryId(selectedSubCategoryId);
+    setProductId("");
+    setProductList([]);
+
+    if (selectedSubCategoryId) {
+      fetchAllProduct(categoryId, selectedSubCategoryId);
+    }
+  };
+
   const fillSubCategories = () => {
-    return subCategoryList.map((item) => {
-      return (
-        <MenuItem value={item.subcategoryid}>{item.subcategoryname}</MenuItem>
-      )
-    })
-  }
-  // ...............................
-  // Product DropDown Manupilation
+    return subCategoryList.map((item) => (
+      <MenuItem key={item.subcategoryid} value={item.subcategoryid}>
+        {item.subcategoryname}
+      </MenuItem>
+    ));
+  };
+
   const handleProductChange = (event) => {
-    setProductId(event.target.value)
-  }
+    setProductId(event.target.value);
+  };
+
   const fetchAllProduct = async (cid, sid) => {
-    var body = { categoryid: cid, subcategoryid: sid }
-    var result = await postData('product/fetch_all_product', body)
-    setProductList(result.data)
-  }
+    try {
+      const body = { categoryid: cid, subcategoryid: sid };
+      const result = await postData("api/products/fetch_all_product", body);
+      if (Array.isArray(result?.data)) {
+        setProductList(result.data);
+      } else if (Array.isArray(result)) {
+        setProductList(result);
+      } else {
+        console.error("Unexpected product response format:", result);
+        setProductList([]);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setProductList([]);
+    }
+  };
+
   const fillProducts = () => {
     return productList.map((item) => {
+      const productId = item.id || item.productid;
       return (
-        <MenuItem value={item.productid}>{item.productname}</MenuItem>
-      )
-    })
-  }
-  // ...............................
+        <MenuItem key={productId} value={productId}>
+          {item.productname}
+        </MenuItem>
+      );
+    });
+  };
 
   const handleSubmit = async () => {
-    var body = { 'categoryid': categoryId, 'subcategoryid': subCategoryId, 'productid': productId, 'size': JSON.stringify(size) }
-
-    var result = await postData('size/add_new_size', body)
-
-    if (result.status) {
+    if (!categoryId || !subCategoryId || !productId || size.length === 0) {
       Swal.fire({
-        icon: 'success',
-        title: 'Record Submitted Successfully',
-      })
-    }
-    else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Something went wrong!',
-      })
+        icon: "error",
+        title: "Validation Error",
+        text: "Please fill all fields",
+      });
+      return;
     }
 
-  }
+    setIsSubmitting(true);
+
+    try {
+      const body = {
+        categoryid: categoryId,
+        subcategoryid: subCategoryId,
+        productid: productId,
+        dimension: size, // Now sending the array directly
+      };
+
+      const result = await postData("api/dimensions/add_new_dimension", body);
+
+      if (result?.status) {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: result.message || "Sizes added successfully",
+        });
+        handleReset();
+      } else {
+        throw new Error(result?.error || "Failed to add sizes");
+      }
+    } catch (error) {
+      console.error("Error adding dimensions:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Failed to add sizes",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleReset = () => {
-
-  }
+    setCategoryId("");
+    setSubCategoryId("");
+    setProductId("");
+    setSize([]);
+    setSubCategoryList([]);
+    setProductList([]);
+  };
 
   return (
     <div className={classes.mainContainer}>
       <div className={classes.box}>
         <Grid container className={classes.gridStyle} spacing={2}>
-          <Grid item xs={12} style={{ display: 'flex' }}>
-            <div className={classes.headingText}>
-              Size Interface
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', width: '71%' }}>
-              <Avatar src={'/report.png'} variant="square" style={{ width: 39 }} onClick={() => navigate('/dashboard/displayallsize')} />
+          <Grid item xs={12} style={{ display: "flex" }}>
+            <div className={classes.headingText}>Size Interface</div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                width: "71%",
+              }}
+            >
+              <Avatar
+                src={"/report.png"}
+                variant="square"
+                style={{ width: 39, cursor: "pointer" }}
+                onClick={() => navigate("/dashboard/displayallsize")}
+              />
             </div>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Category</InputLabel>
+              <InputLabel>Category</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
                 value={categoryId}
                 label="Category"
                 onChange={handleCategoryChange}
               >
-                <MenuItem>Choose Category</MenuItem>
+                <MenuItem value="">Choose Category</MenuItem>
                 {fillCategories()}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label1">SubCategory</InputLabel>
+              <InputLabel>SubCategory</InputLabel>
               <Select
-                labelId="demo-simple-select-label1"
-                id="demo-simple-select1"
                 value={subCategoryId}
                 label="SubCategory"
                 onChange={handleSubCategoryChange}
+                disabled={!categoryId}
               >
-                <MenuItem>Choose SubCategory</MenuItem>
+                <MenuItem value="">Choose SubCategory</MenuItem>
                 {fillSubCategories()}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Product</InputLabel>
+              <InputLabel>Product</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
                 value={productId}
                 label="Product"
                 onChange={handleProductChange}
+                disabled={!subCategoryId}
               >
-                <MenuItem>Choose Product</MenuItem>
+                <MenuItem value="">Choose Product</MenuItem>
                 {fillProducts()}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <InputLabel id="demo-multiple-checkbox-label">Size</InputLabel>
+              <InputLabel>Size</InputLabel>
               <Select
-                labelId="demo-multiple-checkbox-label"
-                id="demo-multiple-checkbox"
                 multiple
                 value={size}
                 onChange={handleChange}
-                input={<OutlinedInput label="Tag" />}
-                renderValue={(selected) => selected.join(', ')}
+                input={<OutlinedInput label="Size" />}
+                renderValue={(selected) => selected.join(", ")}
                 MenuProps={MenuProps}
-
               >
                 {names.map((name) => (
                   <MenuItem key={name} value={name}>
-                    <Checkbox checked={size.indexOf(name) > -1} />
+                    <Checkbox checked={size.includes(name)} />
                     <ListItemText primary={name} />
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Grid>
+
           <Grid item xs={6}>
-            <Button onClick={handleSubmit} fullWidth variant="contained" color="primary">Submit</Button>
+            <Button
+              onClick={handleSubmit}
+              fullWidth
+              variant="contained"
+              color="primary"
+              disabled={
+                !categoryId ||
+                !subCategoryId ||
+                !productId ||
+                size.length === 0 ||
+                isSubmitting
+              }
+            >
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </Button>
           </Grid>
+
           <Grid item xs={6}>
-            <Button fullWidth onClick={handleReset} variant="contained" color="primary">Reset</Button>
+            <Button
+              onClick={handleReset}
+              fullWidth
+              variant="contained"
+              color="secondary"
+              disabled={isSubmitting}
+            >
+              Reset
+            </Button>
           </Grid>
         </Grid>
       </div>
     </div>
-  )
-
+  );
 }
-
-
-
-
-
-
-

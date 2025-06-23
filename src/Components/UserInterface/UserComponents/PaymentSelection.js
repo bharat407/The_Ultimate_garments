@@ -79,39 +79,39 @@ export default function PaymentSelection(props){
             <Grid item xs={4}> 
 
           <div onClick={handlePaytm} style={{marginBottom:10,background:'#fff',textAlign:'center',fontSize:16,padding:10,borderRadius:3,fontWeight:700,cursor:'pointer',border: showPaytm ? '2px solid #51cccc' : '2px solid #ddd'}}>
-            Pay using Paytm <img src={`${ServerURL}/images/paytm.png`} style={{width:'18%',height:'auto',}} />
+            Pay using Paytm <img src={`paytm.png`} style={{width:'18%',height:'auto',}} />
           </div>
 
           <div onClick={handlCard} style={{marginBottom:10,background:'#fff',textAlign:'center',fontSize:16,padding:2,borderRadius:3,fontWeight:700,cursor:'pointer',border: showCard ? '2px solid #51cccc' : '2px solid #ddd' }}>
-            <span><img src={`${ServerURL}/images/debitcard.png`} style={{width:'10%',height:'auto',}} /></span> <span> Debit/Credit Card</span>
+            <span><img src={`debitcard.png`} style={{width:'10%',height:'auto',}} /></span> <span> Debit/Credit Card</span>
             <div style={{fontSize:12,fontWeight:350}}>
                 VISA,Master Card
             </div>
           </div>
 
           <div onClick={handleUpi} style={{marginBottom:10,background:'#fff',textAlign:'center',fontSize:16,padding:2,borderRadius:3,fontWeight:700,cursor:'pointer',border: showUpi ? '2px solid #51cccc' : '2px solid #ddd' }}>
-            <span><img src={`${ServerURL}/images/upi.png`} style={{width:'14%',height:'auto',}} /></span> <span> UPI</span>
+            <span><img src={`upi.png`} style={{width:'14%',height:'auto',}} /></span> <span> UPI</span>
             <div style={{fontSize:12,fontWeight:350}}>
                 Google Pay,PhonePe,BHIM & More
             </div>
           </div>
 
           <div onClick={handleWallets} style={{marginBottom:10,background:'#fff',textAlign:'center',fontSize:16,padding:2,fontWeight:700,borderRadius:3,cursor:'pointer',border: showWallets ? '2px solid #51cccc' : '2px solid #ddd' }}>
-            <span><img src={`${ServerURL}/images/wallet.png`} style={{width:'8%',height:'auto',}} /></span> <span> Wallets</span>
+            <span><img src={`wallet.png`} style={{width:'8%',height:'auto',}} /></span> <span> Wallets</span>
             <div style={{fontSize:12,fontWeight:350}}>
                 Paytm, PhonePe, Mobikwik, OlaMoney & More
             </div>
           </div>
 
           <div onClick={handleNetBanking} style={{marginBottom:10,background:'#fff',textAlign:'center',fontSize:16,padding:2,fontWeight:700 ,borderRadius:3,cursor:'pointer',border: showNetBanking ? '2px solid #51cccc' : '2px solid #ddd'}}>
-            <span><img src={`${ServerURL}/images/netbanking2.png`} style={{width:'10%',height:'auto',}} /></span> <span> Netbanking</span>
+            <span><img src={`netbanking2.png`} style={{width:'10%',height:'auto',}} /></span> <span> Netbanking</span>
             <div style={{fontSize:12,fontWeight:350}}>
                 All  Indian Banks
             </div>
           </div>
 
           <div onClick={handleCod} style={{marginBottom:10,background:'#fff',textAlign:'center',fontSize:16,padding:2,fontWeight:700,borderRadius:3,cursor:'pointer',border: showCod ? '2px solid #51cccc' : '2px solid #ddd' }}>
-            <span><img src={`${ServerURL}/images/cod.png`} style={{width:'10%',height:'auto',}} /></span> <span> Cash on Delivery</span>
+            <span><img src={`cod.png`} style={{width:'10%',height:'auto',}} /></span> <span> Cash on Delivery</span>
             <div style={{fontSize:12,fontWeight:350}}>
                 Pay online to avoid cash handling charges(₹50 per product)
             </div>
@@ -125,7 +125,7 @@ export default function PaymentSelection(props){
             {showPaytm?
             <div style={{display:'flex',justifyContent:'center',alignItems:'center',border:'2px solid #000',marginTop:10}}>
             <div style={{display:'flex',justifyContent:'center',alignItems:'center',background:'#fff',padding:15,fontWeight:700,fontSize:16}}>
-               100% secured by   <img src={`${ServerURL}/images/paytm.png`} style={{width:'20%',height:'auto',}} />
+               100% secured by   <img src={`paytm.png`} style={{width:'20%',height:'auto',}} />
             </div>
             </div>:null}
  
@@ -170,7 +170,7 @@ export default function PaymentSelection(props){
                 />
             </div>
             <div style={{display:'flex',justifyContent:'center',alignItems:'center',}}> 
-            100% secured by  <img src={`${ServerURL}/images/razorpay.png`} style={{width:'20%',height:'auto',}} />
+            100% secured by  <img src={`razorpay.png`} style={{width:'20%',height:'auto',}} />
             </div>
             
             </div>
@@ -194,7 +194,7 @@ export default function PaymentSelection(props){
                 />
             </div>
             <div style={{display:'flex',justifyContent:'center',alignItems:'center',}}> 
-            100% secured by  <img src={`${ServerURL}/images/razorpay.png`} style={{width:'20%',height:'auto',}} />
+            100% secured by  <img src={`razorpay.png`} style={{width:'20%',height:'auto',}} />
             </div>
             
             </div>
@@ -206,9 +206,9 @@ export default function PaymentSelection(props){
             Pay Using Wallets
               </div>
              <div>
-             <input type="radio" value="mobikwik" name="wallet" /> <img src={`${ServerURL}/images/mobikwik.webp`} style={{width:'6%',height:'auto',position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>Mobikwik</span><br/>
-             <input type="radio" value="paytm" name="wallet" /> <img src={`${ServerURL}/images/paytmcircle.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>Paytm</span><br/>
-             <input type="radio" value="phonepe" name="wallet" /> <img src={`${ServerURL}/images/phonepecircle.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>PhonePe</span><br/>
+             <input type="radio" value="mobikwik" name="wallet" /> <img src={`mobikwik.webp`} style={{width:'6%',height:'auto',position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>Mobikwik</span><br/>
+             <input type="radio" value="paytm" name="wallet" /> <img src={`paytmcircle.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>Paytm</span><br/>
+             <input type="radio" value="phonepe" name="wallet" /> <img src={`phonepecircle.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>PhonePe</span><br/>
              </div>
               </div>:null}
 
@@ -218,17 +218,17 @@ export default function PaymentSelection(props){
             Pay Using Net Banking
               </div>
              <div>
-             <input type="radio" value="paytm" name="netbanking" /> <img src={`${ServerURL}/images/paytmcircle.png`} style={{width:'6%',height:'auto',position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>Paytm</span><br/>
-             <input type="radio" value="sbi" name="netbanking" /> <img src={`${ServerURL}/images/sbi.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>SBI</span><br/>
-             <input type="radio" value="pnb" name="netbanking" /> <img src={`${ServerURL}/images/pnb.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>PNB</span><br/>
-             <input type="radio" value="axis" name="netbanking" /> <img src={`${ServerURL}/images/axis.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>AXIS</span><br/>
+             <input type="radio" value="paytm" name="netbanking" /> <img src={`paytmcircle.png`} style={{width:'6%',height:'auto',position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>Paytm</span><br/>
+             <input type="radio" value="sbi" name="netbanking" /> <img src={`sbi.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>SBI</span><br/>
+             <input type="radio" value="pnb" name="netbanking" /> <img src={`pnb.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>PNB</span><br/>
+             <input type="radio" value="axis" name="netbanking" /> <img src={`axis.png`} style={{width:'6%',height:'auto',marginTop:10,position:'relative',top:7}}/> <span style={{fontSize:14,fontFamily:'sans-serif',fontWeight:500}}>AXIS</span><br/>
              </div>
               </div>:null}
 
           {showCod?
               <div style={{display:'flex',justifyContent:'center',alignItems:'center',border:'2px solid #fff',marginTop:10}}>
             <div style={{display:'flex',justifyContent:'center',alignItems:'center',background:'#fff',padding:2,fontWeight:700,fontSize:25}}>
-               Saftey Delivery of Your Item <img src={`${ServerURL}/images/delivery.webp`} style={{width:'40%',height:'auto',}} />
+               Saftey Delivery of Your Item <img src={`delivery.webp`} style={{width:'40%',height:'auto',}} />
             </div>
             </div>:null}
 

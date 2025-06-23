@@ -1,307 +1,197 @@
-// State Management
-import { useEffect, useState } from "react";
-// Material Table
+import React, { useEffect, useState } from "react";
 import MaterialTable from "@material-table/core";
-// Component
-import { Button, Grid, Avatar, TextField } from "@material-ui/core";
-// Services
-import { getData, postData, ServerURL } from "../Services/NodeServices";
-// Styles
-import { useStyles } from "./DisplayAllCategoryCss";
-// Material Dialog
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-// Sweet Alert
+import {
+  Avatar,
+  Dialog,
+  DialogContent,
+  Button,
+  TextField,
+  Grid,
+} from "@mui/material";
 import Swal from "sweetalert2";
-// Use Navigate For Call Another Component
-import { useNavigate } from "react-router";
+import { getData, postData } from "../Services/NodeServices";
 
-export default function DisplayAllCategory(props) {
-  var classes = useStyles();
+export default function CategoryList() {
+  const [categoryList, setCategoryList] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editData, setEditData] = useState({
+    categoryid: "",
+    categoryname: "",
+    iconUrl: "",
+    icon: { url: "", bytes: "" },
+  });
 
-  var navigate = useNavigate();
-
-  // States
-  const [categories, setCategories] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [categoryName, setCategoryName] = useState("");
-  const [icon, setIcon] = useState({ url: "/icon.png", bytes: "" });
-  const [categoryId, setCategoryId] = useState("");
-  const [btnStatus, setBtnStatus] = useState(false);
-  const [oldIcon, setOldIcon] = useState("");
-  const [uploadBtn, setUploadBtn] = useState(false);
-  const [oldPic, setOldPic] = useState("");
-
-  // change Image Src
-  const handleIcon = (event) => {
-    setIcon({
-      url: URL.createObjectURL(event.target.files[0]),
-      bytes: event.target.files[0],
-    });
-    setBtnStatus(true);
-    setUploadBtn(true);
-  };
-  // Fetch All Data For Material Table
   const fetchAllCategory = async () => {
-    var data = await getData("category/display_all_category");
-    setCategories(data.data);
+    const response = await getData("category/display_all_category");
+    if (response.status) setCategoryList(response.categories);
   };
-  // Modal
-  const handleOpen = (rowData) => {
-    setCategoryId(rowData.categoryid);
-    setCategoryName(rowData.categoryname);
-    setOldIcon(`${ServerURL}/images/${rowData.icon}`);
-    setIcon({ url: `${ServerURL}/images/${rowData.icon}`, bytes: "" });
-    setOldPic(`${rowData.icon}`);
 
-    setOpen(true);
-  };
-  // Close Modal
-  const handleClose = () => {
-    setOpen(false);
-  };
-  // Edit Service
-  const handleEditCategory = async () => {
-    setOpen(false);
-    var body = { categoryname: categoryName, categoryid: categoryId };
-    var result = await postData("category/edit_category_data", body);
-
-    if (result.status) {
-      Swal.fire({
-        icon: "success",
-        title: "Record Updated Successfully",
-      });
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Something went wrong!",
-      });
-    }
-
-    fetchAllCategory();
-  };
-  // delete Service
-  const handleDeleteCategory = async () => {
-    setOpen(false);
-
-    Swal.fire({
-      title: "Do you want to delete the category?",
-      showDenyButton: true,
-      showCancelButton: true,
-      confirmButtonText: "delete",
-      denyButtonText: `Don't Delete`,
-    }).then(async (res) => {
-      /* Read more about isConfirmed, isDenied below */
-      if (res.isConfirmed) {
-        var body = { categoryid: categoryId };
-        var result = await postData("category/delete_category_data", body);
-
-        if (result.status) {
-          Swal.fire("Deleted!", "", "success");
-          fetchAllCategory();
-        } else {
-          Swal.fire("Server Error!", "", "error");
-        }
-      } else if (res.isDenied) {
-        Swal.fire("Category are not deleted", "", "info");
-      }
-    });
-  };
-  //create a Dynamic Button
-  const saveAndCancelButton = () => {
-    return (
-      <div>
-        {btnStatus ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "110%",
-            }}
-          >
-            <Button
-              onClick={handleSavePicture}
-              variant="contained"
-              color="primary"
-            >
-              Save
-            </Button>
-            <Button
-              onClick={handleCancel}
-              variant="contained"
-              color="secondary"
-            >
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <></>
-        )}
-      </div>
-    );
-  };
-  // Edit Picture
-  const handleSavePicture = async () => {
-    setOpen(false);
-
-    var formData = new FormData();
-    formData.append("categoryid", categoryId);
-    formData.append("icon", icon.bytes);
-    formData.append("oldpic", oldPic);
-
-    var result = await postData("category/update_icon", formData, true);
-
-    if (result.status) {
-      Swal.fire({
-        icon: "success",
-        title: "Picture Updated Successfully",
-      });
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Something went wrong!",
-      });
-    }
-
-    setBtnStatus(false);
-    setUploadBtn(false);
-    setOldIcon("");
-    fetchAllCategory();
-  };
-  const handleCancel = () => {
-    setBtnStatus(false);
-    setIcon({ url: oldIcon, bytes: "" });
-    setUploadBtn(false);
-  };
-  // Call FetchAllCategory fn
-  useEffect(function () {
+  useEffect(() => {
     fetchAllCategory();
   }, []);
 
-  // Dialog
-  const showCategory = () => {
-    return (
-      <div>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogContent>
-            <div>
-              <Grid className={classes.gridStyle} container spacing={2}>
-                <Grid item className={classes.headingText} xs={12}>
-                  Edit Category
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    value={categoryName}
-                    onChange={(event) => setCategoryName(event.target.value)}
-                    fullWidth
-                    variant="outlined"
-                    label="Category Name"
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    onClick={handleEditCategory}
-                    color="primary"
-                    variant="contained"
-                  >
-                    Edit
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    onClick={handleDeleteCategory}
-                    color="primary"
-                    variant="contained"
-                  >
-                    Delete
-                  </Button>
-                </Grid>
-                <Grid item xs={4} className={classes.center}>
-                  <Button
-                    disabled={uploadBtn}
-                    onChange={handleIcon}
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    component="label"
-                  >
-                    Upload
-                    <input hidden accept="image/*" multiple type="file" />
-                  </Button>
-                </Grid>
-                <Grid item xs={4} className={classes.center}>
-                  <Avatar
-                    alt="Category"
-                    src={icon.url}
-                    sx={{ width: 80, height: 80 }}
-                    variant="square"
-                  />
-                </Grid>
-                <Grid item xs={4} className={classes.center}>
-                  {saveAndCancelButton()}
-                </Grid>
-              </Grid>
-            </div>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Close</Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
+  const handleDelete = async (rowData) => {
+    const confirmation = await Swal.fire({
+      title: `Delete "${rowData.categoryname}"?`,
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (confirmation.isConfirmed) {
+      const body = { categoryid: rowData.categoryid };
+      const result = await postData("category/delete_category_data", body);
+
+      if (result.status) {
+        Swal.fire("Deleted!", "Category has been deleted.", "success");
+        fetchAllCategory();
+      } else {
+        Swal.fire("Failed", result.message || "Delete failed", "error");
+      }
+    }
   };
 
-  // Material Table
-  function displayCategories() {
-    return (
+  const handleEditOpen = (rowData) => {
+    setEditData({
+      categoryid: rowData.categoryid,
+      categoryname: rowData.categoryname,
+      iconUrl: rowData.iconUrl,
+      icon: { url: rowData.iconUrl, bytes: "" },
+    });
+    setOpenDialog(true);
+  };
+
+  const handleEditIcon = (event) => {
+    const file = event.target.files[0];
+    setEditData((prev) => ({
+      ...prev,
+      icon: { url: URL.createObjectURL(file), bytes: file },
+    }));
+  };
+
+  const handleEditSubmit = async () => {
+    const formData = new FormData();
+    formData.append("categoryid", editData.categoryid);
+    formData.append("categoryname", editData.categoryname);
+    formData.append("oldpic", editData.iconUrl);
+    if (editData.icon.bytes) {
+      formData.append("icon", editData.icon.bytes);
+    }
+
+    const result = await postData(
+      "category/edit_category_data",
+      formData,
+      true
+    );
+    if (result.status) {
+      Swal.fire("Success", "Category updated successfully", "success");
+      setOpenDialog(false);
+      fetchAllCategory();
+    } else {
+      Swal.fire("Error", result.message || "Update failed", "error");
+    }
+  };
+
+  const editDialog = () => (
+    <Dialog
+      open={openDialog}
+      onClose={() => setOpenDialog(false)}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogContent>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              label="Category Name"
+              fullWidth
+              value={editData.categoryname}
+              onChange={(e) =>
+                setEditData((prev) => ({
+                  ...prev,
+                  categoryname: e.target.value,
+                }))
+              }
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <Button fullWidth variant="contained" component="label">
+              Upload Icon
+              <input
+                hidden
+                accept="image/*"
+                type="file"
+                onChange={handleEditIcon}
+              />
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Avatar
+              src={editData.icon.url}
+              variant="rounded"
+              sx={{ width: 60, height: 60 }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <Button variant="contained" onClick={handleEditSubmit} fullWidth>
+              Save
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button
+              variant="outlined"
+              onClick={() => setOpenDialog(false)}
+              fullWidth
+            >
+              Cancel
+            </Button>
+          </Grid>
+        </Grid>
+      </DialogContent>
+    </Dialog>
+  );
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Manage Categories</h2>
       <MaterialTable
-        title="List of Categories"
+        title="Category List"
+        data={categoryList}
         columns={[
-          { title: "Id", field: "categoryid" },
-          { title: "Category", field: "categoryname" },
+          { title: "Category Name", field: "categoryname" },
           {
             title: "Icon",
             render: (rowData) => (
-              <img
-                src={`${ServerURL}/images/${rowData.icon}`}
-                width="40"
-                style={{ borderRadius: 5 }}
+              <Avatar
+                src={rowData.iconUrl}
+                variant="rounded"
+                sx={{ width: 40, height: 40 }}
               />
             ),
           },
         ]}
-        data={categories}
         actions={[
           {
             icon: "edit",
             tooltip: "Edit Category",
-            onClick: (event, rowData) => handleOpen(rowData),
+            onClick: (event, rowData) => handleEditOpen(rowData),
           },
           {
-            icon: "add",
-            tooltip: "Add Category",
-            isFreeAction: true,
-            onClick: (event) => navigate("/dashboard/category"),
+            icon: "delete",
+            tooltip: "Delete Category",
+            onClick: (event, rowData) => handleDelete(rowData),
           },
         ]}
+        options={{
+          actionsColumnIndex: -1,
+          headerStyle: {
+            backgroundColor: "#01579b",
+            color: "#FFF",
+          },
+        }}
       />
-    );
-  }
-
-  return (
-    <div className={classes.mainContainer}>
-      <div className={classes.box}>{displayCategories()}</div>
-      {showCategory()}
+      {editDialog()}
     </div>
   );
 }

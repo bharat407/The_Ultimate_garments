@@ -1,6 +1,5 @@
-// Router Module
-import {BrowserRouter as Router,Routes,Route} from "react-router-dom"
-// Adminitrations
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// Admin
 import Dashboard from "./Components/Administration/Dashboard";
 import AdminLogin from "./Components/Administration/AdminLogin";
 // User Interface
@@ -8,29 +7,23 @@ import Home from "./Components/UserInterface/Home";
 import ProductList from "./Components/UserInterface/ProductList";
 import SetProductDetails from "./Components/UserInterface/SetProductDetails";
 import MyCart from "./Components/UserInterface/MyCart";
-import Address from "./Components/UserInterface/Address";
+import Address from "./Components/UserInterface/AddAddress";
 import PaymentGateway from "./Components/UserInterface/PaymentGateway";
 
-function App(props) {
+function App() {
   return (
-    <div>
-
-      <Router>
-        <Routes>
-          
-          <Route element={<Dashboard/>} path="/dashboard/*" />  {/* [*] Represent the Dashboard ke saare Routes */}
-          <Route element={<AdminLogin/>} path="/adminlogin" />
-          <Route element={<Home/>} path="/home" />
-          <Route element={<ProductList/>} path="/productlist/:id/:icon" />
-          <Route element={<SetProductDetails/>} path="/setproductdetails" />
-          <Route element={<MyCart/>} path='/mycart'/>
-          <Route element={<Address/>} path='/address'/>
-          <Route element={<PaymentGateway/>} path='/paymentgateway'/>
-        </Routes>
-      </Router>
-      
-      </div>
-
+    <Router>
+      <Routes>
+        <Route path="/dashboard/*" element={<Dashboard />} />
+        <Route path="/adminlogin" element={<AdminLogin />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/productlist/:cid/:sid" element={<ProductList />} />
+        <Route path="/setproductdetails" element={<SetProductDetails />} />
+        <Route path="/mycart" element={<MyCart />} />
+        <Route path="/address" element={<Address />} />
+        <Route path="/paymentgateway" element={<PaymentGateway />} />
+      </Routes>
+    </Router>
   );
 }
 

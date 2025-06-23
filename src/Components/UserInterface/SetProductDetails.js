@@ -1,28 +1,31 @@
 import React, { useState } from "react";
-// import SearchBar from './UserComponents/SearchBar';
 import SearchBar from "./UserComponents/SearchBar";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useLocation } from "react-router";
 
-// Components....................
+// Your other components
 import ProductDetailsFilling from "./UserComponents/ProductDetailsFilling";
-import ImageSlider from "./UserComponents/ImageSlider";
+import ProductWithSlider from "./UserComponents/ImageSlider"; // Use this instead of ImageSlider
 import RatingLogo from "./UserComponents/RatingLogo";
 import ProductDetails from "./UserComponents/ProductDetails";
 import Footer from "./UserComponents/Footer";
 
-export default function SetProductDetails(props) {
+export default function SetProductDetails() {
   const [refresh, setRefresh] = useState(false);
-  const updateCart = () => {
-    setRefresh(!refresh);
-  };
+  const updateCart = () => setRefresh(!refresh);
 
-  var location = useLocation();
-  var product = location.state.product;
-  var productid = JSON.parse(product).productid;
-  var categoryid = JSON.parse(product).categoryid;
-  var subcategoryid = JSON.parse(product).subcategoryid;
-  console.log("PROPS:", product);
+  const location = useLocation();
+  const product = location.state?.product;
+
+  // If product is a JSON string, parse it, else assume object
+  const productObj = typeof product === "string" ? JSON.parse(product) : product;
+
+  const productid = productObj?.id;
+  const categoryid = productObj?.categoryid;
+  const subcategoryid = productObj?.subcategoryid;
+
+  console.log("Product Props:", productObj);
+  console.log("Product ID:", productid);
 
   const matches = useMediaQuery("(max-width:720px)");
 
@@ -32,7 +35,7 @@ export default function SetProductDetails(props) {
         style={{
           display: "flex",
           justifyContent: "center",
-          alignItem: "center",
+          alignItems: "center",
           textAlign: "center",
           letterSpacing: "2px",
           color: "black",
@@ -57,16 +60,13 @@ export default function SetProductDetails(props) {
           <div
             style={{ display: "flex", justifyContent: "center", width: "100%" }}
           >
-            <ImageSlider
-              categoryid={categoryid}
-              productid={productid}
-              subcategoryid={subcategoryid}
-            />
+            <ProductWithSlider productId={productid} />
           </div>
+
           <div style={{ paddingLeft: 2, marginTop: 15, width: "100%" }}>
             <ProductDetailsFilling
               updateCart={updateCart}
-              productInfo={product}
+              productInfo={productObj}
             />
           </div>
           <div style={{ marginTop: 20 }}>
@@ -86,11 +86,7 @@ export default function SetProductDetails(props) {
                 width: "50%",
               }}
             >
-              <ImageSlider
-                categoryid={categoryid}
-                subcategoryid={subcategoryid}
-                productid={productid}
-              />
+              <ProductWithSlider productId={productid} />
             </div>
             <div
               style={{
@@ -102,7 +98,7 @@ export default function SetProductDetails(props) {
             >
               <ProductDetailsFilling
                 updateCart={updateCart}
-                productInfo={product}
+                productInfo={productObj}
               />
             </div>
           </div>

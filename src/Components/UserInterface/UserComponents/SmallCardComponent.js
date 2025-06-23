@@ -1,5 +1,6 @@
 import { ServerURL } from "../../Services/NodeServices";
-import { useNavigate } from "react-router";
+import { useNavigate } from 'react-router-dom';
+
 
 export default function SmallCardComponent(props) {
   var navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function SmallCardComponent(props) {
   return props.data.map((item) => {
     return (
       <div
+        key={item.subcategoryid}
         onClick={() => handleProductDetails(item)}
         style={{
           padding: 2,
@@ -23,7 +25,8 @@ export default function SmallCardComponent(props) {
       >
         <img
           title={item.subcategoryname}
-          src={`${ServerURL}/images/${item.icon}`}
+          // src={`${item.icon}`}
+           src={`${item.icon}`}
           style={{ width: "95%", height: "95%" }}
         />
         <div

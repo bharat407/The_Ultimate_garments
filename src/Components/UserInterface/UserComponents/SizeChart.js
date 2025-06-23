@@ -10,6 +10,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useState } from "react";
 import Slide from '@mui/material/Slide';
 import { ServerURL } from "../../Services/NodeServices";
+import size from "../../../Assets/sizeShirt.png";
 
 import { useStyles } from './SizeChartCss';
 
@@ -125,7 +126,7 @@ export default function SizeChart(props){
                     </Grid> 
                     <Grid item xs={12}>
                         <div className={classes.shirtimg}>
-                    <img src={`${ServerURL}/images/sizeShirt.png`} style={{width:'60%',height:'auto',marginTop:17}} />
+                    <img src={size} style={{width:'60%',height:'auto',marginTop:17}} />
                     </div>
                     </Grid>
                     <Grid item xs={12}>
