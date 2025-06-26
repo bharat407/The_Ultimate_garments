@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   CircularProgress,
@@ -21,11 +21,9 @@ import { getData, postData } from "../Services/NodeServices";
 export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
-  const userData = Object.values(user)[0] || {};
-  const loginEmail = userData.email;
+  const userEmail = Object.keys(user)[0] || "";
+  const userData = user[userEmail] || {};
   const userId = userData._id;
-  console.log("Redux User object in CheckoutWithAddress:", JSON.stringify(user));
-  console.log("Redux User Email in CheckoutWithAddress:", loginEmail); // Added for debugging
 
   const [loading, setLoading] = useState(false);
   const [addresses, setAddresses] = useState([]);
@@ -33,20 +31,18 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
   const [editMode, setEditMode] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
-  const fetchAddresses = async (email) => {
+  const fetchAddresses = useCallback(async (email) => {
     if (!email) return;
     setLoading(true);
     try {
       const res = await getData(`address/display_email/${email}`);
-      console.log("Fetch addresses API response:", res);
-
       if (Array.isArray(res)) {
         setAddresses(res);
-        if (res.length > 0 && selectedAddressId === null) {
-          setSelectedAddressId(res[0].addressid);
-        } else if (!res.find((a) => a.addressid === selectedAddressId)) {
-          setSelectedAddressId(res.length > 0 ? res[0].addressid : null);
-        }
+        setSelectedAddressId((prev) =>
+          res.length > 0 && !res.some((a) => a.addressid === prev)
+            ? res[0].addressid
+            : prev
+        );
       } else {
         setAddresses([]);
         setSelectedAddressId(null);
@@ -59,41 +55,18 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const loginEmail = userData.email;
-    if (!loginEmail) return;
-
-    const fetchUserData = async () => {
-      try {
-        const userResponse = await fetch(
-          `http://localhost:8080/user/get-by/${loginEmail}`
-        );
-        if (!userResponse.ok) throw new Error("Failed to fetch user data");
-
-        const fetchedUserData = await userResponse.json();
-
-        setForm((prev) => ({
-          ...prev,
-          email: fetchedUserData.email || loginEmail,
-          userid: fetchedUserData._id || "",
-        }));
-
-        await fetchAddresses(fetchedUserData.email || loginEmail);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        Swal.fire("Error", "Failed to fetch user information", "error");
-      }
-    };
-
-    fetchUserData();
-  }, [userData.email, fetchAddresses]);
+    if (userEmail) {
+      fetchAddresses(userEmail);
+    }
+  }, [userEmail, fetchAddresses]);
 
   const [form, setForm] = useState({
     addressid: "",
-    email: "",
-    userid: "",
+    email: userEmail || "",
+    userid: userId || "",
     street: "",
     town: "",
     city: "",
@@ -105,8 +78,8 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
   const resetForm = () => {
     setForm({
       addressid: "",
-      email: userData.email || "",
-      userid: userData._id || "",
+      email: userEmail || "",
+      userid: userId || "",
       street: "",
       town: "",
       city: "",
@@ -139,18 +112,20 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
     if (confirm.isConfirmed) {
       try {
         const res = await postData("address/delete_address", { addressid });
-        console.log("Delete address response:", res);
-
-        if (res && res.success) {
+        if (res?.success) {
           Swal.fire("Deleted!", "Address deleted successfully", "success");
-          fetchAddresses(form.email);
+          fetchAddresses(userEmail);
           if (selectedAddressId === addressid) {
-            setSelectedAddressId(null);
+            setSelectedAddressId(
+              addresses.length > 1
+                ? addresses.find((a) => a.addressid !== addressid)?.addressid
+                : null
+            );
           }
         } else {
           Swal.fire(
             "Error",
-            res.message || "Failed to delete address",
+            res?.message || "Failed to delete address",
             "error"
           );
         }
@@ -163,10 +138,7 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
 
   const saveAddress = async () => {
     const url = editMode ? "address/update_address" : "address/add_address";
-
     const requiredFields = [
-      "email",
-      "userid",
       "street",
       "town",
       "city",
@@ -183,25 +155,23 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
     }
 
     try {
-      const res = await postData(url, form);
-      console.log("Save address response:", res);
+      const payload = {
+        ...form,
+        email: userEmail,
+        userid: userId,
+      };
 
-      if (res && res.success) {
+      const res = await postData(url, payload);
+      if (res?.success) {
         Swal.fire(
           "Success",
           `Address ${editMode ? "updated" : "added"} successfully`,
           "success"
         );
-        await fetchAddresses(form.email);
-
-        const newId = res.addressid || form.addressid;
-        if (newId) {
-          setSelectedAddressId(newId);
-        }
-
+        await fetchAddresses(userEmail);
         resetForm();
       } else {
-        Swal.fire("Error", res.message || "Failed to save address", "error");
+        Swal.fire("Error", res?.message || "Failed to save address", "error");
       }
     } catch (error) {
       console.error("Save address error:", error);
@@ -244,48 +214,62 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
         )}
       </DialogTitle>
       <DialogContent dividers>
-        {!showForm && (
-          <List>
-            {addresses.length === 0 && (
-              <Typography>No addresses found. Please add one.</Typography>
-            )}
-            {addresses.map((addr) => (
-              <ListItem
-                key={addr.addressid}
-                selected={addr.addressid === selectedAddressId}
-                onClick={() => selectAddress(addr.addressid)}
-                button
-              >
-                <ListItemText
-                  primary={`${addr.street}, ${addr.town}, ${addr.city}, ${addr.state}, ${addr.pinCode}, ${addr.country}`}
-                  secondary={addr.email}
-                />
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startEdit(addr);
-                  }}
-                  size="small"
-                  color="primary"
+        {!showForm ? (
+          <>
+            <List>
+              {addresses.length === 0 && (
+                <Typography>No addresses found. Please add one.</Typography>
+              )}
+              {addresses.map((addr) => (
+                <ListItem
+                  key={addr.addressid}
+                  selected={addr.addressid === selectedAddressId}
+                  onClick={() => selectAddress(addr.addressid)}
+                  button
                 >
-                  <Edit />
-                </IconButton>
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteAddress(addr.addressid);
-                  }}
-                  size="small"
-                  color="error"
-                >
-                  <Delete />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-        )}
-
-        {showForm && (
+                  <ListItemText
+                    primary={`${addr.street}, ${addr.town}, ${addr.city}, ${addr.state}, ${addr.pinCode}, ${addr.country}`}
+                    secondary={addr.email}
+                  />
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startEdit(addr);
+                    }}
+                    size="small"
+                    color="primary"
+                  >
+                    <Edit />
+                  </IconButton>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteAddress(addr.addressid);
+                    }}
+                    size="small"
+                    color="error"
+                  >
+                    <Delete />
+                  </IconButton>
+                </ListItem>
+              ))}
+            </List>
+            <Button
+              fullWidth
+              variant="contained"
+              color="success"
+              onClick={handleCheckout}
+              disabled={loading || !selectedAddressId}
+              sx={{ mt: 2 }}
+            >
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Checkout Securely"
+              )}
+            </Button>
+          </>
+        ) : (
           <AddAddress
             form={form}
             setForm={setForm}
@@ -293,23 +277,6 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
             onSave={saveAddress}
             editMode={editMode}
           />
-        )}
-
-        {!showForm && (
-          <Button
-            fullWidth
-            variant="contained"
-            color="success"
-            onClick={handleCheckout}
-            disabled={loading}
-            sx={{ mt: 2 }}
-          >
-            {loading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Checkout Securely"
-            )}
-          </Button>
         )}
       </DialogContent>
     </Dialog>

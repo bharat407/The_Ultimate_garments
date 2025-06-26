@@ -5,63 +5,55 @@ import Signup from "./Signup";
 import { useNavigate } from "react-router";
 import { postData, isValidAuth } from "../../Services/NodeServices";
 import Swal from "sweetalert2";
-import { useSelector } from "react-redux";
-import CheckoutWithAddress from "../CheckoutWithAddress"; // Import the address component
+import { useDispatch, useSelector } from "react-redux";
+import CheckoutWithAddress from "../CheckoutWithAddress";
 
 export default function CouponAndPriceDetail(props) {
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const { user, addresses } = useSelector((state) => state);
+  const userEmail = user ? Object.keys(user)[0] : null;
+  const userData = userEmail ? user[userEmail] : {};
 
-  const [userAddress, setUserAddress] = useState({});
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [authState, setAuthState] = useState(false);
-  const [addressDialogOpen, setAddressDialogOpen] = useState(false); // State for address dialog
-
-  // ✅ Check JWT token on mount
-  const checkAuth = async () => {
-    const token = localStorage.getItem("token");
-    console.log("Token from localStorage:", token);
-
-    const result = await isValidAuth();
-    console.log("Auth check result:", result);
-
-    if (result.auth) {
-      setAuthState(true);
-    } else {
-      setAuthState(false);
-    }
-  };
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      checkAuth();
-    }, 100); // slight delay to ensure token is saved
+    const fetchData = async () => {
+      const result = await isValidAuth();
 
-    return () => clearTimeout(timeout);
-  }, []);
+      if (result.auth) {
+        setAuthState(true);
+        dispatch({ type: "ADD_USER", payload: [result.email, result] });
 
-  // ✅ Fetch user address only if logged in
-  useEffect(() => {
-    const fetchUserAddress = async () => {
-      try {
-        setLoading(true);
-        const result = await postData(`address/display_email/${user.email}`); // Use email
-        setUserAddress(result);
-      } catch (error) {
-        Swal.fire("Error", "Failed to fetch address", "error");
-      } finally {
-        setLoading(false);
+        // Only fetch address if not already in Redux
+        if (result.email && (!addresses || !addresses[result.email])) {
+          try {
+            setLoading(true);
+            const res = await postData(`address/display_email/${result.email}`);
+            dispatch({
+              type: "SET_ADDRESSES",
+              payload: {
+                email: result.email,
+                addresses: res,
+              },
+            });
+          } catch (error) {
+            Swal.fire("Error", "Failed to fetch address", "error");
+          } finally {
+            setLoading(false);
+          }
+        }
+      } else {
+        setAuthState(false);
       }
     };
 
-    if (user.email) {
-      // Use email
-      fetchUserAddress();
-    }
-  }, [user.email]); // Use email
+    fetchData();
+  }, [dispatch, addresses]); // Add addresses as a dependency
 
-  // ✅ Checkout logic
   const handleCheckout = () => {
     if (!authState) {
       Swal.fire({
@@ -73,12 +65,9 @@ export default function CouponAndPriceDetail(props) {
       setOpen(true);
       return;
     }
-
-    // Open the address dialog instead of navigating directly
     setAddressDialogOpen(true);
   };
 
-  // 💰 Price calculation logic
   const totalPayableAmount = (a, b) =>
     a + (b.offerprice > 0 ? b.offerprice * b.qty : b.price * b.qty);
   const actualAmount = (a, b) => a + b.price * b.qty;
@@ -103,11 +92,9 @@ export default function CouponAndPriceDetail(props) {
       >
         <div style={{ display: "flex", flexWrap: "wrap", margin: 20 }}>
           <Grid container spacing={2}>
-            {/* Coupon section */}
             <Grid item xs={12}>
               <div style={{ display: "flex", textAlign: "center" }}>
                 <DiscountIcon style={{ color: "#000", marginTop: 5 }} />
-                &nbsp;&nbsp;
                 <span style={{ color: "#535353" }}>
                   Have a coupon/referral code?
                 </span>
@@ -128,7 +115,6 @@ export default function CouponAndPriceDetail(props) {
               </Button>
             </Grid>
 
-            {/* Price Details */}
             <Grid item xs={12}>
               <div style={{ fontWeight: 700, fontSize: 18 }}>
                 PRICE DETAILS ({values.length} items)
@@ -187,23 +173,22 @@ export default function CouponAndPriceDetail(props) {
               </div>
             </Grid>
 
-            {/* Checkout Button */}
             <Grid item xs={12}>
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <div
                   onClick={values.length > 0 ? handleCheckout : null}
                   style={{
                     boxShadow: "0px 0px 4px 0px grey",
-                    background: values.length > 0 ? "#51CBCC" : "#cccccc", // Change background if disabled
+                    background: values.length > 0 ? "#51CBCC" : "#cccccc",
                     fontSize: 20,
                     fontWeight: 600,
                     width: "70%",
                     padding: 10,
                     borderRadius: 5,
                     color: "#000000",
-                    cursor: values.length > 0 ? "pointer" : "not-allowed", // Change cursor if disabled
+                    cursor: values.length > 0 ? "pointer" : "not-allowed",
                     textAlign: "center",
-                    opacity: values.length > 0 ? 1 : 0.6, // Reduce opacity if disabled
+                    opacity: values.length > 0 ? 1 : 0.6,
                   }}
                 >
                   {loading ? (
@@ -218,14 +203,11 @@ export default function CouponAndPriceDetail(props) {
         </div>
       </div>
 
-      {/* Login Popup */}
       <Signup open={open} setOpen={setOpen} />
-
-      {/* Address Selection Popup */}
       <CheckoutWithAddress
         open={addressDialogOpen}
         onClose={closeAddressDialog}
-        totalAmount={tpay} // Pass the total amount
+        totalAmount={tpay}
       />
     </div>
   );
