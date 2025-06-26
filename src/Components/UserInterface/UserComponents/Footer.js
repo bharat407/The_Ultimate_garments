@@ -26,23 +26,23 @@ export default function Footer(props) {
             <Grid item xs={6}>
                 <h4>COMPANY</h4>
                 <div className={classes.center}>
-                 <a href='#' className={classes.aStyles}>About Us</a>
-                 <a href='#' className={classes.aStyles}>Term and Condition</a>
-                 <a href='#' className={classes.aStyles}>Collaboration</a>
-                 <a href='#' className={classes.aStyles}>Privacy Policy</a>
-                 <a href='#' className={classes.aStyles}>Shipping Policy</a>
-                 <a href='#' className={classes.aStyles}>Media</a>
+                 <a href='#!' className={classes.aStyles}>About Us</a>
+                 <a href='#!' className={classes.aStyles}>Term and Condition</a>
+                 <a href='#!' className={classes.aStyles}>Collaboration</a>
+                 <a href='#!' className={classes.aStyles}>Privacy Policy</a>
+                 <a href='#!' className={classes.aStyles}>Shipping Policy</a>
+                 <a href='#!' className={classes.aStyles}>Media</a>
                 </div>              
             </Grid>
             <Grid item xs={6}>
                 <h4>NEED HELP</h4>
                 <div className={classes.center}>
-                 <a href='#' className={classes.aStyles}>FAQs</a>
-                 <a href='#' className={classes.aStyles}>Email Us</a>
-                 <a href='#' className={classes.aStyles}>Return, Refund and Cancellation Policy</a>
-                 <a href='#' className={classes.aStyles}>Track Order</a>
-                 <a href='#' className={classes.aStyles}>Carrer</a>
-                 <a href='#' className={classes.aStyles}>Site Map</a>
+                 <a href='#!' className={classes.aStyles}>FAQs</a>
+                 <a href='#!' className={classes.aStyles}>Email Us</a>
+                 <a href='#!' className={classes.aStyles}>Return, Refund and Cancellation Policy</a>
+                 <a href='#!' className={classes.aStyles}>Track Order</a>
+                 <a href='#!' className={classes.aStyles}>Carrer</a>
+                 <a href='#!' className={classes.aStyles}>Site Map</a>
                 </div>
             </Grid>
             <Grid item xs={6}>
@@ -54,10 +54,10 @@ export default function Footer(props) {
             <Grid item xs={6}>
                 <h4>LET'S BE FRIENDS</h4>
                 <div className={classes.iconRow}>
-                 <a href='#' className={classes.iconStyles}> <FacebookIcon fontSize="large" /></a>
-                 <a href='#' className={classes.iconStyles}><InstagramIcon fontSize="large" /></a>
-                 <a href='#' className={classes.iconStyles}> <WhatsAppIcon fontSize="large" /></a>
-                 <a href='#' className={classes.iconStyles}> <LinkedInIcon fontSize="large" /></a>
+                 <a href='#!' className={classes.iconStyles}> <FacebookIcon fontSize="large" /></a>
+                 <a href='#!' className={classes.iconStyles}><InstagramIcon fontSize="large" /></a>
+                 <a href='#!' className={classes.iconStyles}> <WhatsAppIcon fontSize="large" /></a>
+                 <a href='#!' className={classes.iconStyles}> <LinkedInIcon fontSize="large" /></a>
                 </div>
             </Grid>
         </Grid>
@@ -68,23 +68,23 @@ export default function Footer(props) {
             <Grid item xs={3}>
                 <h4>COMPANY</h4>
                 <div className={classes.center}>
-                 <a href='#' className={classes.aStyles}>About Us</a>
-                 <a href='#' className={classes.aStyles}>Term and Condition</a>
-                 <a href='#' className={classes.aStyles}>Collaboration</a>
-                 <a href='#' className={classes.aStyles}>Privacy Policy</a>
-                 <a href='#' className={classes.aStyles}>Shipping Policy</a>
-                 <a href='#' className={classes.aStyles}>Media</a>
+                 <a href='#!' className={classes.aStyles}>About Us</a>
+                 <a href='#!' className={classes.aStyles}>Term and Condition</a>
+                 <a href='#!' className={classes.aStyles}>Collaboration</a>
+                 <a href='#!' className={classes.aStyles}>Privacy Policy</a>
+                 <a href='#!' className={classes.aStyles}>Shipping Policy</a>
+                 <a href='#!' className={classes.aStyles}>Media</a>
                 </div>              
             </Grid>
             <Grid item xs={3}>
                 <h4>NEED HELP</h4>
                 <div className={classes.center}>
-                 <a href='#' className={classes.aStyles}>FAQs</a>
-                 <a href='#' className={classes.aStyles}>Email Us</a>
-                 <a href='#' className={classes.aStyles}>Return, Refund and Cancellation Policy</a>
-                 <a href='#' className={classes.aStyles}>Track Order</a>
-                 <a href='#' className={classes.aStyles}>Carrer</a>
-                 <a href='#' className={classes.aStyles}>Site Map</a>
+                 <a href='#!' className={classes.aStyles}>FAQs</a>
+                 <a href='#!' className={classes.aStyles}>Email Us</a>
+                 <a href='#!' className={classes.aStyles}>Return, Refund and Cancellation Policy</a>
+                 <a href='#!' className={classes.aStyles}>Track Order</a>
+                 <a href='#!' className={classes.aStyles}>Carrer</a>
+                 <a href='#!' className={classes.aStyles}>Site Map</a>
                 </div>
             </Grid>
             <Grid item xs={3}>
@@ -96,10 +96,10 @@ export default function Footer(props) {
             <Grid item xs={3}>
                 <h4>LET'S BE FRIENDS</h4>
                 <div className={classes.iconRow}>
-                 <a href='#' className={classes.iconStyles}> <FacebookIcon fontSize="large" /></a>
-                 <a href='#' className={classes.iconStyles}><InstagramIcon fontSize="large" /></a>
-                 <a href='#' className={classes.iconStyles}> <WhatsAppIcon fontSize="large" /></a>
-                 <a href='#' className={classes.iconStyles}> <LinkedInIcon fontSize="large" /></a>
+                 <a href='#!' className={classes.iconStyles}> <FacebookIcon fontSize="large" /></a>
+                 <a href='#!' className={classes.iconStyles}><InstagramIcon fontSize="large" /></a>
+                 <a href='#!' className={classes.iconStyles}> <WhatsAppIcon fontSize="large" /></a>
+                 <a href='#!' className={classes.iconStyles}> <LinkedInIcon fontSize="large" /></a>
                 </div>
             </Grid>
         </Grid>

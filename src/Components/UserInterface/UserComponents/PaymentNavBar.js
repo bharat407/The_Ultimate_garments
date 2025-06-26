@@ -1,7 +1,7 @@
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
-import { ServerURL } from "../../Services/NodeServices";
+
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router";
@@ -62,7 +62,7 @@ export default function PaymentNavBar(props) {
               <img
                 src={`securityicon.png`}
                 style={{ width: "12%", height: "auto" }}
-              />
+ alt=""              />
               100% SECURE PAYMENT
             </div>
           </div>

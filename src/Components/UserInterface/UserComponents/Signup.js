@@ -14,13 +14,14 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CallIcon from "@mui/icons-material/Call";
+
 import DialogActions from "@mui/material/DialogActions";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import Slide from "@mui/material/Slide";
 import { ServerURL } from "../../Services/NodeServices";
 import { postData } from "../../Services/NodeServices";
+import { useDispatch } from "react-redux";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="down" ref={ref} {...props} />;
@@ -65,6 +66,7 @@ BootstrapDialogTitle.propTypes = {
 };
 
 export default function SignupDialog(props) {
+  const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const [openOtp, setOpenOtp] = useState(false);
   const [openDetail, setOpenDetail] = useState(false);
@@ -171,6 +173,8 @@ export default function SignupDialog(props) {
     password: loginPassword,
   });
 
+  console.log("Login API Result:", result); // Debug log
+
   if (result.token) {
     setToken(result.token);
     setEmail(loginEmail);
@@ -180,15 +184,22 @@ export default function SignupDialog(props) {
     const userResponse = await fetch(`http://localhost:8080/user/get-by/${loginEmail}`);
     const user = await userResponse.json();
 
-    if (user.userid) {
+    console.log("Fetched User Data:", user); // Debug log
+
+    if (user.userid) { // Assuming 'userid' is the correct property for user ID
       // 🔄 Save user to localStorage or pass via props
       localStorage.setItem("user", JSON.stringify(user));
+      console.log("Dispatching ADD_USER with payload:", [user.email, user]); // Debug log
+      dispatch({ type: "ADD_USER", payload: [user.email, user] });
+    } else {
+      console.warn("User ID not found in fetched user data:", user); // Debug log
     }
 
     handleClose();
     setError("");
   } else {
     setError(result.error || "Login failed");
+    console.error("Login failed:", result.error || "Unknown error"); // Debug log
   }
 };
 

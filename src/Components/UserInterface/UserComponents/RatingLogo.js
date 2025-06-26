@@ -1,6 +1,6 @@
 import React from "react";
 import { Grid } from '@mui/material';
-import { ServerURL } from "../../Services/NodeServices";
+
 
 export default function RatingLogo(props){
 
@@ -12,21 +12,21 @@ export default function RatingLogo(props){
             
         <Grid item xs={3}>
             <div style={{width:200,height:150,padding:25,textAlign:'center',borderRadius:'5px',border:'1px solid #a7a7a7'}}>
-            <img src={`milion.jpg`} style={{width:'35%',height:'auto',marginTop:17}} /><br/><div style={{fontSize:17,padding: '10px 0 15px',fontWeight:700}}>Happy Customers</div>
+            <img src={`milion.jpg`} style={{width:'35%',height:'auto',marginTop:17}} alt="" /><br/><div style={{fontSize:17,padding: '10px 0 15px',fontWeight:700}}>Happy Customers</div>
             </div>
         </Grid>
         </div>
         <div style={{padding:25,}}>
         <Grid item xs={3}>
             <div style={{width:200,height:150,padding:25,textAlign:'center',borderRadius:'5px',border:'1px solid #a7a7a7'}}>
-            <img src={`india.jpg`} style={{width:'35%',height:'auto',marginTop:17}} /><br/><div style={{fontSize:17,padding: '10px 0 15px',fontWeight:700}}>Made in India</div>
+            <img src={`india.jpg`} style={{width:'35%',height:'auto',marginTop:17}} alt="" /><br/><div style={{fontSize:17,padding: '10px 0 15px',fontWeight:700}}>Made in India</div>
             </div>
         </Grid>
         </div>
         <div style={{padding:25,}}>
         <Grid item xs={3}>
             <div style={{width:200,height:150,padding:25,textAlign:'center',borderRadius:'5px',border:'1px solid #a7a7a7'}}>
-            <img src={`safe.jpg`} style={{width:'35%',height:'auto',marginTop:17}} /><br/><div style={{fontSize:17,padding: '10px 0 15px',fontWeight:700}}>Packed with Safety</div>
+            <img src={`safe.jpg`} style={{width:'35%',height:'auto',marginTop:17}} alt="" /><br/><div style={{fontSize:17,padding: '10px 0 15px',fontWeight:700}}>Packed with Safety</div>
             </div>
         </Grid>
         </div>
@@ -34,7 +34,7 @@ export default function RatingLogo(props){
         <div style={{padding:25,}}>
         <Grid item xs={3}>
             <div style={{width:200,height:150,padding:25,textAlign:'center',borderRadius:'5px',border:'1px solid #a7a7a7'}}>
-            <img src={`returnpolicy.jpg`} style={{width:'35%',height:'auto',marginTop:17}} /><br/><div style={{fontSize:17,padding: '10px 0 15px',fontWeight:700}}>Easy Replacement</div>
+            <img src={`returnpolicy.jpg`} style={{width:'35%',height:'auto',marginTop:17}} alt="" /><br/><div style={{fontSize:17,padding: '10px 0 15px',fontWeight:700}}>Easy Replacement</div>
             </div>
         </Grid>
         </div>

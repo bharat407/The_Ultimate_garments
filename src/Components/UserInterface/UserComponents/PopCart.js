@@ -2,7 +2,7 @@ import * as React from 'react';
 import Popover from '@mui/material/Popover';
 import { Divider } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { ServerURL } from '../../Services/NodeServices';
+
 
 export default function PopCart(props) {
 
@@ -40,12 +40,12 @@ export default function PopCart(props) {
   var aamt = values.reduce(actualAmount, 0)
 
   const showCart = () => {
-    return values.map((item) => {
+    return values.map((item, index) => {
       return (
-        <div style={{ padding: 5, display: 'flex', width: 330, justifyContent: 'space-evenly' }}>
+        <div key={item.id || index} style={{ padding: 5, display: 'flex', width: 330, justifyContent: 'space-evenly' }}>
 
           <div style={{ width: 60, height: 60 }}>
-            <img src={`${item.icon}`} style={{ width: 60, height: 60 }} />
+            <img src={`${item.icon}`} style={{ width: 60, height: 60 }} alt="" />
           </div>
 
           <div style={{ padding: 3, display: 'flex', flexDirection: 'column', marginTop: -3 }}>

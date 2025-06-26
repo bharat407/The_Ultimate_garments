@@ -1,5 +1,5 @@
 import React from "react";
-import { ServerURL } from "../../Services/NodeServices";
+
 import { useNavigate } from "react-router";
 export default function ThreeCardComponent(props) {
   var navigate = useNavigate();
@@ -26,7 +26,7 @@ export default function ThreeCardComponent(props) {
           title={item.subcategoryname}
           src={`${item.icon}`}
           style={{ width: "100%", height: "100%" }}
-        />
+ alt=""        />
         <div
           style={{
             fontSize: 20,

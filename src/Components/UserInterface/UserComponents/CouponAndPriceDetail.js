@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  Grid,
-  CircularProgress,
-  TextField,
-} from "@mui/material";
+import { Button, Grid, CircularProgress, TextField } from "@mui/material";
 import DiscountIcon from "@mui/icons-material/Discount";
 import Signup from "./Signup";
 import { useNavigate } from "react-router";
@@ -60,7 +55,8 @@ export default function CouponAndPriceDetail(props) {
       }
     };
 
-    if (user.email) { // Use email
+    if (user.email) {
+      // Use email
       fetchUserAddress();
     }
   }, [user.email]); // Use email
@@ -97,7 +93,14 @@ export default function CouponAndPriceDetail(props) {
 
   return (
     <div style={{ width: "100%" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", background: "#fff", width: "100%" }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          background: "#fff",
+          width: "100%",
+        }}
+      >
         <div style={{ display: "flex", flexWrap: "wrap", margin: 20 }}>
           <Grid container spacing={2}>
             {/* Coupon section */}
@@ -105,7 +108,9 @@ export default function CouponAndPriceDetail(props) {
               <div style={{ display: "flex", textAlign: "center" }}>
                 <DiscountIcon style={{ color: "#000", marginTop: 5 }} />
                 &nbsp;&nbsp;
-                <span style={{ color: "#535353" }}>Have a coupon/referral code?</span>
+                <span style={{ color: "#535353" }}>
+                  Have a coupon/referral code?
+                </span>
               </div>
             </Grid>
             <Grid item xs={8}>
@@ -118,31 +123,66 @@ export default function CouponAndPriceDetail(props) {
               />
             </Grid>
             <Grid item xs={4}>
-              <Button style={{ background: "pink", color: "black" }}>APPLY</Button>
+              <Button style={{ background: "pink", color: "black" }}>
+                APPLY
+              </Button>
             </Grid>
 
             {/* Price Details */}
             <Grid item xs={12}>
-              <div style={{ fontWeight: 700, fontSize: 18 }}>PRICE DETAILS ({values.length} items)</div>
+              <div style={{ fontWeight: 700, fontSize: 18 }}>
+                PRICE DETAILS ({values.length} items)
+              </div>
             </Grid>
-            <Grid item xs={12}><hr color="#ABABAB" /></Grid>
+            <Grid item xs={12}>
+              <hr color="#ABABAB" />
+            </Grid>
 
-            <Grid item xs={6}><div>Total MRP (Inc. of Taxes)</div></Grid>
-            <Grid item xs={6}><div style={{ textAlign: "right" }}>₹{aamt}</div></Grid>
+            <Grid item xs={6}>
+              <div>Total MRP (Inc. of Taxes)</div>
+            </Grid>
+            <Grid item xs={6}>
+              <div style={{ textAlign: "right" }}>₹{aamt}</div>
+            </Grid>
 
-            <Grid item xs={6}><div>Discount:</div></Grid>
-            <Grid item xs={6}><div style={{ textAlign: "right" }}>-₹{aamt - tpay}</div></Grid>
+            <Grid item xs={6}>
+              <div>Discount:</div>
+            </Grid>
+            <Grid item xs={6}>
+              <div style={{ textAlign: "right" }}>-₹{aamt - tpay}</div>
+            </Grid>
 
-            <Grid item xs={6}><div>Shipping</div></Grid>
-            <Grid item xs={6}><div style={{ textAlign: "right", color: "#2ecc71" }}>Free</div></Grid>
-
-            <Grid item xs={12}><hr color="#ABABAB" /></Grid>
-
-            <Grid item xs={6}><div style={{ fontWeight: 700, fontSize: 18 }}>Total Amount</div></Grid>
-            <Grid item xs={6}><div style={{ textAlign: "right", fontWeight: 700, fontSize: 18 }}>₹{tpay}</div></Grid>
+            <Grid item xs={6}>
+              <div>Shipping</div>
+            </Grid>
+            <Grid item xs={6}>
+              <div style={{ textAlign: "right", color: "#2ecc71" }}>Free</div>
+            </Grid>
 
             <Grid item xs={12}>
-              <div style={{ textAlign: "center", background: "#2ecc71", color: "#fff", padding: 7 }}>
+              <hr color="#ABABAB" />
+            </Grid>
+
+            <Grid item xs={6}>
+              <div style={{ fontWeight: 700, fontSize: 18 }}>Total Amount</div>
+            </Grid>
+            <Grid item xs={6}>
+              <div
+                style={{ textAlign: "right", fontWeight: 700, fontSize: 18 }}
+              >
+                ₹{tpay}
+              </div>
+            </Grid>
+
+            <Grid item xs={12}>
+              <div
+                style={{
+                  textAlign: "center",
+                  background: "#2ecc71",
+                  color: "#fff",
+                  padding: 7,
+                }}
+              >
                 You Saved ₹{aamt - tpay} on this order
               </div>
             </Grid>
@@ -151,24 +191,25 @@ export default function CouponAndPriceDetail(props) {
             <Grid item xs={12}>
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <div
-                  onClick={handleCheckout}
+                  onClick={values.length > 0 ? handleCheckout : null}
                   style={{
                     boxShadow: "0px 0px 4px 0px grey",
-                    background: "#51CBCC",
+                    background: values.length > 0 ? "#51CBCC" : "#cccccc", // Change background if disabled
                     fontSize: 20,
                     fontWeight: 600,
                     width: "70%",
                     padding: 10,
                     borderRadius: 5,
-                    color: "#fff",
-                    cursor: "pointer",
+                    color: "#000000",
+                    cursor: values.length > 0 ? "pointer" : "not-allowed", // Change cursor if disabled
                     textAlign: "center",
+                    opacity: values.length > 0 ? 1 : 0.6, // Reduce opacity if disabled
                   }}
                 >
                   {loading ? (
                     <CircularProgress size={24} style={{ color: "#fff" }} />
                   ) : (
-                    "CHECKOUT SECURELY"
+                    "CHECKOUT NOW"
                   )}
                 </div>
               </div>

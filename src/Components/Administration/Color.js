@@ -8,7 +8,7 @@ import Select from "@mui/material/Select";
 import { getData, postData } from "../Services/NodeServices";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import ColorPicker from "material-ui-color-picker";
+
 
 export default function Color() {
   const classes = useStyles();
@@ -148,19 +148,7 @@ export default function Color() {
     setSelectedDimension(dimension);
   };
 
-  const handleColorChange = (color) => {
-    console.log("Color received:", color); // Debug log
-    if (typeof color === "string") {
-      setColorCode(color);
-    } else if (color && color.hex) {
-      setColorCode(color.hex);
-    } else if (color && typeof color === "object") {
-      const hex = `#${((1 << 24) + (color.r << 16) + (color.g << 8) + color.b)
-        .toString(16)
-        .slice(1)}`;
-      setColorCode(hex);
-    }
-  };
+  
 
   const handleSubmit = async () => {
     try {

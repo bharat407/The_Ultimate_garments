@@ -50,6 +50,7 @@ export default function ProductDetails(props) {
               </div>
               <div>
                 <table>
+                  <tbody>
                   <tr>
                     <th>Fabric:</th>
                     <td>&nbsp;&nbsp;&nbsp;&nbsp;NS Crush Lycra</td>
@@ -74,6 +75,7 @@ export default function ProductDetails(props) {
                     <th>Purpose: </th>
                     <td>&nbsp;&nbsp;&nbsp;&nbsp;Moderate Winter</td>
                   </tr>
+                  </tbody>
                 </table>
               </div>
             </div>

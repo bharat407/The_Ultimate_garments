@@ -21,41 +21,17 @@ import { getData, postData } from "../Services/NodeServices";
 export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
-  const loginEmail = user.email;
+  const userData = Object.values(user)[0] || {};
+  const loginEmail = userData.email;
+  const userId = userData._id;
+  console.log("Redux User object in CheckoutWithAddress:", JSON.stringify(user));
+  console.log("Redux User Email in CheckoutWithAddress:", loginEmail); // Added for debugging
 
   const [loading, setLoading] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [showForm, setShowForm] = useState(false);
-
-  useEffect(() => {
-    if (!loginEmail) return;
-
-    const fetchUserData = async () => {
-      try {
-        const userResponse = await fetch(
-          `http://localhost:8080/user/get-by/${loginEmail}`
-        );
-        if (!userResponse.ok) throw new Error("Failed to fetch user data");
-
-        const userData = await userResponse.json();
-
-        setForm((prev) => ({
-          ...prev,
-          email: userData.email || loginEmail,
-          userid: userData._id || "",
-        }));
-
-        await fetchAddresses(userData.email || loginEmail);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        Swal.fire("Error", "Failed to fetch user information", "error");
-      }
-    };
-
-    fetchUserData();
-  }, [loginEmail]);
 
   const fetchAddresses = async (email) => {
     if (!email) return;
@@ -66,7 +42,9 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
 
       if (Array.isArray(res)) {
         setAddresses(res);
-        if (!res.find((a) => a.addressid === selectedAddressId)) {
+        if (res.length > 0 && selectedAddressId === null) {
+          setSelectedAddressId(res[0].addressid);
+        } else if (!res.find((a) => a.addressid === selectedAddressId)) {
           setSelectedAddressId(res.length > 0 ? res[0].addressid : null);
         }
       } else {
@@ -83,6 +61,35 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
     }
   };
 
+  useEffect(() => {
+    const loginEmail = userData.email;
+    if (!loginEmail) return;
+
+    const fetchUserData = async () => {
+      try {
+        const userResponse = await fetch(
+          `http://localhost:8080/user/get-by/${loginEmail}`
+        );
+        if (!userResponse.ok) throw new Error("Failed to fetch user data");
+
+        const fetchedUserData = await userResponse.json();
+
+        setForm((prev) => ({
+          ...prev,
+          email: fetchedUserData.email || loginEmail,
+          userid: fetchedUserData._id || "",
+        }));
+
+        await fetchAddresses(fetchedUserData.email || loginEmail);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        Swal.fire("Error", "Failed to fetch user information", "error");
+      }
+    };
+
+    fetchUserData();
+  }, [userData.email, fetchAddresses]);
+
   const [form, setForm] = useState({
     addressid: "",
     email: "",
@@ -98,8 +105,8 @@ export default function CheckoutWithAddress({ open, onClose, totalAmount }) {
   const resetForm = () => {
     setForm({
       addressid: "",
-      email: form.email || loginEmail || "",
-      userid: form.userid || "",
+      email: userData.email || "",
+      userid: userData._id || "",
       street: "",
       town: "",
       city: "",

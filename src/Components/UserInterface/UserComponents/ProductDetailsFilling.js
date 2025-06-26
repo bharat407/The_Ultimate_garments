@@ -28,7 +28,6 @@ export default function ProductDetailsFilling(props) {
 
   const cart = useSelector((state) => state.cart);
   const selectedProduct = cart[product.id];
-  const keys = Object.keys(cart);
 
   // States
   const [sizes, setSizes] = useState([]); // sizes is array of strings like ["S", "L"]
@@ -74,7 +73,12 @@ export default function ProductDetailsFilling(props) {
 
   setSizes(sizesList);
 
-  if (selectedSize) {
+  // Automatically select the first size if none is selected
+  if (!selectedSize && sizesList.length > 0) {
+    const firstSize = sizesList[0];
+    setSelectedSize(firstSize);
+    fetchColors(product.id, firstSize);
+  } else if (selectedSize) {
     fetchColors(product.id, selectedSize);
   }
 };
@@ -99,6 +103,16 @@ export default function ProductDetailsFilling(props) {
       }
 
       setColors(colorsData);
+
+      // Always select the first color if colors are available
+      if (colorsData.length > 0) {
+        const firstColor = colorsData[0];
+        setSelectedColor(firstColor);
+        setQty(1); // Set quantity to 1 when a color is auto-selected
+      } else {
+        setSelectedColor(null);
+        setQty(0);
+      }
     } catch (error) {
       console.error(error);
       Swal.fire("Error", error.message, "error");
@@ -110,13 +124,26 @@ export default function ProductDetailsFilling(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (selectedSize && selectedColor && qty === 1 && !selectedProduct) {
+      const updatedProduct = {
+        ...product,
+        size: selectedSize,
+        color: selectedColor,
+        qty: qty,
+      };
+      dispatch({ type: "ADD_CART", payload: [product.id, updatedProduct] });
+      if (props.updateCart) props.updateCart();
+    }
+  }, [selectedSize, selectedColor, qty, product, dispatch, props, selectedProduct]);
+
   // Handle selecting a size
   const handleSize = (index) => {
     const newSize = sizes[index];
     setSelectedSize(newSize);
-    setSelectedColor(null);
-    setQty(0);
-    fetchColors(product.id, newSize);
+    setSelectedColor(null); // Reset selected color
+    setQty(0); // Reset quantity
+    fetchColors(product.id, newSize); // Fetch colors for the new size
   };
 
   // Handle selecting a color
@@ -127,13 +154,15 @@ export default function ProductDetailsFilling(props) {
 
   // Handle quantity change
   const handleQtyChange = (value) => {
-    if (!selectedSize || !selectedColor) {
-      Swal.fire("Select size and color first");
+    
+
+    if (!product || !product.id) {
+      console.error("Product data is not available yet.");
       return;
     }
 
     if (value === 0) {
-      dispatch({ type: "DELETE_CART", payload: product.id });
+      dispatch({ type: "DELETE_CART", payload: [product.id] });
       setQty(0);
     } else {
       const updatedProduct = {
@@ -271,7 +300,17 @@ export default function ProductDetailsFilling(props) {
         <Grid item xs={6} sm={3}>
           <Button
             fullWidth
-            onClick={()=> navigate("/mycart")}
+            onClick={() => {
+              const updatedProduct = {
+                ...product,
+                size: selectedSize,
+                color: selectedColor,
+                qty: qty,
+              };
+              dispatch({ type: "ADD_CART", payload: [product.id, updatedProduct] });
+              if (props.updateCart) props.updateCart();
+              navigate("/mycart");
+            }}
             variant="contained"
             style={{
               height: "100%",

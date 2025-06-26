@@ -1,5 +1,5 @@
 import React from "react";
-import { ServerURL } from "../../Services/NodeServices";
+
 import { useNavigate } from "react-router";
 
 export default function ProductDetailsComponent(props) {
@@ -23,7 +23,7 @@ export default function ProductDetailsComponent(props) {
         }}
       >
         <div style={{ width: 330, height: 330, cursor: "pointer" }}>
-          <img src={`${item.icon}`} style={{ width: "95%", height: "95%" }} />
+          <img src={`${item.icon}`} style={{ width: "95%", height: "95%" }} alt="" />
           <div
             style={{
               position: "absolute",

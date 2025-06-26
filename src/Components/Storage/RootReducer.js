@@ -7,29 +7,43 @@ export default function RootReducer(state = initialState, action) //action Conta
 {
     switch (action.type) {
         case 'ADD_CART':
-
-            state.cart[action.payload[0]] = action.payload[1]
-            console.log("Redux:", state.cart)
-            return { cart: state.cart, user: state.user }
+            {
+                console.log('RootReducer: Before ADD_CART state:', state);
+                const productId = action.payload[0];
+                const productData = action.payload[1];
+                const newState = {
+                    ...state,
+                    cart: {
+                        ...state.cart,
+                        [productId]: productData
+                    }
+                };
+                console.log('RootReducer: After ADD_CART state:', newState);
+                return newState;
+            }
         case 'DELETE_CART':
-
-            delete state.cart[action.payload[0]]
-            return { cart: state.cart, user: state.user }
+            {
+                const productIdToDelete = action.payload[0];
+                const newCart = { ...state.cart };
+                delete newCart[productIdToDelete];
+                return { ...state, cart: newCart };
+            }
         case 'EMPTY_CART':
-
-            state.cart = {}
-            return { cart: state.cart, user: state.user }
+            return { ...state, cart: {} };
 
         case 'ADD_USER':
-
-            state.user[action.payload[0]] = action.payload[1]
-            console.log("Redux User:", state.user)
-            return { cart: state.cart, user: state.user }
+            {
+                const userEmail = action.payload[0];
+                const userData = action.payload[1];
+                return {
+                    ...state,
+                    user: {
+                        [userEmail]: userData
+                    }
+                };
+            }
         case 'DELETE_USER':
-
-            state.user={}
-            console.log("Redux User:", state.user)
-            return { cart: state.cart, user: state.user }
+            return { ...state, user: {} };
 
         default:
             return state;

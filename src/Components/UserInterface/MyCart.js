@@ -15,9 +15,15 @@ export default function MyCart(props) {
 
   const cart = useSelector((state) => state.cart);
   const values = useMemo(() => Object.values(cart), [cart]);
+  console.log('MyCart: Cart state from Redux:', cart);
+
+  
 
   const [refresh, setRefresh] = useState(false);
-  const updateCart = () => setRefresh(!refresh); // Optional: keep if needed
+
+  const handleRefresh = () => {
+    setRefresh(!refresh);
+  };
 
   return (
     <div style={{ background: "#ecf0f1" }}>
@@ -36,7 +42,7 @@ export default function MyCart(props) {
         >
           <Grid container spacing={2}>
             <Grid item xs={matches ? 12 : 6}>
-              <MyCartProducts value={values} updateCart={updateCart} />
+              <MyCartProducts value={values} updateCart={handleRefresh} />
             </Grid>
             <Grid item xs={matches ? 12 : 6}>
               <CouponAndPriceDetail value={values} page={"Cart"} />

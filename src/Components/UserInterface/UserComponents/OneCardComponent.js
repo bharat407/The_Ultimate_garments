@@ -1,5 +1,5 @@
 import React from "react"
-import { ServerURL } from "../../Services/NodeServices"
+
 import { useNavigate } from "react-router"
 
 export default function OneCardComponent(props) {

@@ -18,7 +18,8 @@ export default function SetProductDetails() {
   const product = location.state?.product;
 
   // If product is a JSON string, parse it, else assume object
-  const productObj = typeof product === "string" ? JSON.parse(product) : product;
+  const productObj =
+    typeof product === "string" ? JSON.parse(product) : product;
 
   const productid = productObj?.id;
   const categoryid = productObj?.categoryid;

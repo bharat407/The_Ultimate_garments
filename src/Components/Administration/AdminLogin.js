@@ -17,12 +17,14 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
 import { postData } from "../Services/NodeServices";
 
 const theme = createTheme();
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [emailid, setEmailid] = useState("");
   const [password, setPassword] = useState("");
 
@@ -34,6 +36,8 @@ export default function AdminLogin() {
 
     if (result.status) {
       localStorage.setItem("token", result.token);
+      console.log("Login Result:", result); // Added for debugging
+      dispatch({ type: "ADD_USER", payload: [result.emailid, { email: result.emailid, userid: result.userid }] });
       navigate("/dashboard");
     } else {
       Swal.fire({

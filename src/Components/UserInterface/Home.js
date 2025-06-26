@@ -14,7 +14,7 @@ import ThreeCardComponent from "./UserComponents/ThreeCardComponent";
 // Two Card Component
 import TwoCardComponent from "./UserComponents/TwoCardComponent";
 // One Component
-import OneCardComponent from "./UserComponents/OneCardComponent";
+
 // Footer
 import Footer from "./UserComponents/Footer";
 
@@ -61,7 +61,6 @@ export default function Home(props) {
   // Fetch Product By Sale Status.......
   const [productBySaleStatus, setProductBySaleStatus] = useState([]);
   const [productBySalePopular, setProductByPopular] = useState([]);
-  const [bigImages, setBigImages] = useState([]);
   const [twoPriorityImages1, setTwoPriorityImages1] = useState([]);
   const [twoPriorityImages2, setTwoPriorityImages2] = useState([]);
   const [twoPriorityImages3, setTwoPriorityImages3] = useState([]);
@@ -76,10 +75,7 @@ export default function Home(props) {
     var result = await postData("api/products/by_salestatus", body);
     setProductByPopular(result.data);
   };
-  const fetchBigImagesForSubcategory = async (priority) => {
-    var result = await getData("subcategory/by-priority/3");
-    setBigImages(result.data);
-  };
+  
   const fetchTwoPriorityForSubcategory1 = async (priority) => {
     var result = await getData("subcategory/by-priority/2");
     console.log("Priority 2 data:", result); // Add this line

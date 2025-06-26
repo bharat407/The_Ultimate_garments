@@ -1,20 +1,29 @@
 import React, { useEffect } from "react";
 import { Grid, TextField, Button, DialogActions } from "@mui/material";
 
-export default function AddAddress({ form, setForm, onCancel, onSave, editMode }) {
+export default function AddAddress({
+  form,
+  setForm,
+  onCancel,
+  onSave,
+  editMode,
+}) {
   const handleInputChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   useEffect(() => {
-    // Populate email and userid from localStorage (if not already set)
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && (!form.email || !form.userid)) {
-      setForm((prev) => ({
-        ...prev,
-        email: user.email,
-        userid: user.userid,
-      }));
+    // Load email and userid from localStorage if not already set
+    if (!form.email || !form.userid) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user) {
+        setForm((prev) => ({
+          ...prev,
+          email: user.email || prev.email,
+          userid: user.userid || prev.userid,
+        }));
+      }
     }
   }, []);
 
@@ -83,11 +92,11 @@ export default function AddAddress({ form, setForm, onCancel, onSave, editMode }
         </Grid>
       </Grid>
 
-      {/* Hidden fields */}
+      {/* Hidden fields to preserve user identity */}
       <input type="hidden" name="email" value={form.email} />
       <input type="hidden" name="userid" value={form.userid} />
 
-      <DialogActions>
+      <DialogActions sx={{ mt: 2 }}>
         <Button onClick={onCancel}>Cancel</Button>
         <Button onClick={onSave} variant="contained" color="primary">
           {editMode ? "Update" : "Add"}

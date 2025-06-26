@@ -5,6 +5,8 @@ import { useNavigate } from "react-router";
 import { css } from "@emotion/react";
 import SyncLoader from "react-spinners/SyncLoader";
 
+import { useLocation } from "react-router";
+
 const override = css`
   display: block;
   margin: 0 auto;
@@ -12,53 +14,62 @@ const override = css`
 `;
 
 const PaymentGateway = () => {
+  const location = useLocation();
+  const { selectedAddress, totalAmount } = location.state || {};
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Get cart data from Redux store
+  // Get cart and user data from Redux
   const cart = useSelector((state) => state.cart);
   const user = useSelector((state) => state.user);
   const userData = Object.values(user)[0] || {};
 
-  // Calculate total amount
-  const tpay = Object.values(cart).reduce((total, item) => {
-    const price = item.offerprice > 0 ? item.offerprice : item.price;
-    return total + price * item.qty;
-  }, 0);
+  
 
-  // Handle payment success
+  // Handle successful payment
   const handlePaymentSuccess = async (paymentId) => {
     try {
       setLoading(true);
-      
+
       const products = Object.values(cart).map((item) => ({
         productId: item._id,
         quantity: item.qty,
-        price: item.offerprice > 0 ? item.offerprice : item.price
+        price: item.offerprice > 0 ? item.offerprice : item.price,
       }));
 
       const orderData = {
         userId: userData._id,
         products,
         paymentId,
-        amount: tpay,
-        email: userData.emailid,
-        status: "COMPLETED"
+        amount: totalAmount,
+        email: userData.email,
+        status: "COMPLETED",
+        shippingAddress: selectedAddress, // Add the selected address here
       };
 
       const result = await postData("api/orders/create", orderData);
 
       if (result?.id) {
+        // Reduce product quantities
+        const updateQtyResult = await postData("api/products/update-quantities", { products });
+        if (!updateQtyResult?.success) {
+          // Handle the case where the quantity update fails
+          console.error("Failed to update product quantities");
+          // You might want to show an error to the user or log this for manual intervention
+        }
+
         dispatch({ type: "EMPTY_CART", payload: [] });
-        navigate("/order-confirmation", { 
-          state: { 
+        navigate("/order-confirmation", {
+          state: {
             orderId: result.id,
-            amount: tpay,
-            paymentId 
-          } 
+            amount: totalAmount,
+            paymentId,
+          },
         });
+      } else {
+        throw new Error("Order not created");
       }
     } catch (err) {
       console.error("Order submission failed:", err);
@@ -67,12 +78,12 @@ const PaymentGateway = () => {
     }
   };
 
-  // Initialize payment immediately
+  // Start Razorpay checkout
   const initializePayment = () => {
     try {
       const options = {
         key: "rzp_test_t4LUM04KXw6wHc",
-        amount: Math.round(tpay * 100),
+        amount: Math.round(totalAmount * 100),
         currency: "INR",
         name: "TheUltimateGarments.com",
         description: "Order Payment",
@@ -81,8 +92,8 @@ const PaymentGateway = () => {
           handlePaymentSuccess(response.razorpay_payment_id);
         },
         theme: {
-          color: "#51cccc"
-        }
+          color: "#51cccc",
+        },
       };
 
       const rzp = new window.Razorpay(options);
@@ -94,7 +105,7 @@ const PaymentGateway = () => {
     }
   };
 
-  // Load Razorpay script and initialize payment on mount
+  // Load Razorpay script and initialize payment
   useEffect(() => {
     if (!window.Razorpay) {
       const script = document.createElement("script");
@@ -113,22 +124,34 @@ const PaymentGateway = () => {
       setLoading(false);
       initializePayment();
     }
-  }, []);
+  }, [initializePayment]);
 
+  // Auto-redirect to homepage after 2 seconds (whether success or fail)
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => {
+        navigate("/");
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading, navigate]);
+
+  // Error UI
   if (error) {
     return (
       <div style={{ textAlign: "center", padding: "40px" }}>
         <h2 style={{ color: "red" }}>{error}</h2>
-        <button onClick={() => navigate("/mycart")}>
-          Return to Cart
-        </button>
+        <p>Redirecting to home page...</p>
       </div>
     );
   }
 
+  // Loader UI
   return (
     <div style={{ textAlign: "center", padding: "40px" }}>
       <h2>Processing your payment...</h2>
+      <p>You will be redirected to home shortly...</p>
       <SyncLoader color="#36D7B7" loading={loading} css={override} size={15} />
     </div>
   );

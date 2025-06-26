@@ -30,7 +30,7 @@ export default function DeliveryOptions() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <img src="cod.jpg" width="40px" />
+          <img src="cod.jpg" width="40px" alt="" />
           <div
             style={{
               display: "flex",
@@ -43,7 +43,7 @@ export default function DeliveryOptions() {
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <img src="ship.jpg" width="40px" />
+          <img src="ship.jpg" width="40px" alt="" />
           <div
             style={{
               display: "flex",

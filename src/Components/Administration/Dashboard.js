@@ -16,7 +16,7 @@ import DisplayAllSize from "./DisplayAllSize";
 import Color from "./Color";
 import DisplayAllColor from "./DisplayAllColor";
 import BannerImages from "./BannerImages";
-import ProductImages from "./ProductImages";
+
 // Jwt Required fn
 import { isValidAuth } from "../Services/NodeServices";
 import { useEffect, useState } from "react";
@@ -24,7 +24,6 @@ import { useNavigate } from "react-router-dom";
 import Spinner from "./Spinner";
 
 export default function Dashboard(props) {
-  var navigate = useNavigate();
 
   // Jwt Manupilation..............
   const [authState, setAuthState] = useState(false);
