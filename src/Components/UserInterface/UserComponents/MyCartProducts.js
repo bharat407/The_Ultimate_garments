@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Grid } from "@mui/material";
 import PlusMinusComponent from "./PlusMinusComponent";
 import { useDispatch } from "react-redux";
+import emptycart from "../../../Assets/emptycart.gif";
 
 export default function MyCartProducts(props) {
   const [refresh, setRefresh] = useState(false);
@@ -44,9 +45,9 @@ export default function MyCartProducts(props) {
         >
           <div>
             <img
-              src={`/images/emptycart.gif`}
+              src={emptycart}
               style={{ width: "100%", height: "100%" }}
-              alt=""
+              alt="empty cart"
             />
           </div>
           <div

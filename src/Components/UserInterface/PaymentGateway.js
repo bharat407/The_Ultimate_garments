@@ -85,11 +85,16 @@ const PaymentGateway = () => {
         key: "rzp_test_t4LUM04KXw6wHc",
         amount: Math.round(totalAmount * 100),
         currency: "INR",
-        name: "TheUltimateGarments.com",
+        name: "Looksy.com",
         description: "Order Payment",
         image: `${ServerURL}/images/logo.png`,
         handler: (response) => {
           handlePaymentSuccess(response.razorpay_payment_id);
+        },
+        prefill: {
+          name: `${userData.firstname} ${userData.lastname}`,
+          email: userData.email,
+          contact: userData.mobileno,
         },
         theme: {
           color: "#51cccc",
@@ -97,6 +102,10 @@ const PaymentGateway = () => {
       };
 
       const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (response) {
+        setError("Payment failed. Please try again.");
+        setLoading(false);
+      });
       rzp.open();
     } catch (err) {
       console.error("Payment error:", err);

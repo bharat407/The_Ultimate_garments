@@ -160,7 +160,7 @@ export default function SearchBar(props) {
                 fontFamily: "cursive",
               }}
             >
-              The Ultimate Garments
+              Looksy – Fast Fashion 
             </div>
 
             {search ? (

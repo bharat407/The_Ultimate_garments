@@ -19,7 +19,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import { postData } from "../Services/NodeServices";
-
+import backgroundImage from "../../Assets/image.png";
 const theme = createTheme();
 
 export default function AdminLogin() {
@@ -37,7 +37,13 @@ export default function AdminLogin() {
     if (result.status) {
       localStorage.setItem("token", result.token);
       console.log("Login Result:", result); // Added for debugging
-      dispatch({ type: "ADD_USER", payload: [result.emailid, { email: result.emailid, userid: result.userid }] });
+      dispatch({
+        type: "ADD_USER",
+        payload: [
+          result.emailid,
+          { email: result.emailid, userid: result.userid },
+        ],
+      });
       navigate("/dashboard");
     } else {
       Swal.fire({
@@ -58,7 +64,7 @@ export default function AdminLogin() {
           sm={4}
           md={7}
           sx={{
-            backgroundImage: "url(https://source.unsplash.com/random)",
+            backgroundImage: `url(${backgroundImage})`,
             backgroundRepeat: "no-repeat",
             backgroundColor: (t) => t.palette.grey[50],
             backgroundSize: "cover",
@@ -114,6 +120,9 @@ export default function AdminLogin() {
                 type="submit"
               >
                 Login
+              </Button>
+              <Button type="button" onClick={() => navigate("/adminregister")}>
+                Register as Admin
               </Button>
             </Box>
           </Box>

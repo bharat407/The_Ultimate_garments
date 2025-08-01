@@ -17,7 +17,7 @@ export default function MyCart(props) {
   const values = useMemo(() => Object.values(cart), [cart]);
   console.log('MyCart: Cart state from Redux:', cart);
 
-  
+
 
   const [refresh, setRefresh] = useState(false);
 

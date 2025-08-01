@@ -1,6 +1,9 @@
 import React from "react";
 import { Grid } from "@mui/material";
 import { ServerURL } from "../../Services/NodeServices";
+import homegrownicons from "../../../Assets/home-grown-icons.jpg";
+import qualityicons from "../../../Assets/quality-icons.jpg";
+import securepayment from "../../../Assets/secure-payment-icons.jpg";
 
 export default function QualityAssuredLogo(props) {
   return (
@@ -37,7 +40,7 @@ export default function QualityAssuredLogo(props) {
               }}
             >
               <img
-                src={`home-grown-icons.jpg`}
+                src={homegrownicons}
                 style={{ width: "35%", height: "auto", marginTop: 17 }}
               />
               <br />
@@ -66,7 +69,7 @@ export default function QualityAssuredLogo(props) {
               }}
             >
               <img
-                src={`quality-icons.jpg`}
+                src={qualityicons}
                 style={{ width: "35%", height: "auto", marginTop: 17 }}
               />
               <br />
@@ -95,7 +98,7 @@ export default function QualityAssuredLogo(props) {
               }}
             >
               <img
-                src={`secure-payment-icons.jpg`}
+                src={securepayment}
                 style={{ width: "35%", height: "auto", marginTop: 17 }}
               />
               <br />

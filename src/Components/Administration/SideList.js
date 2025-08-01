@@ -87,14 +87,17 @@ export default function SideList() {
               </ListItemButton>
             </Link>
 
-            {/* <Link href={'/dashboard/productimages'}  style={{textDecoration:'None',color:'black'}}>
-            <ListItemButton>
+            <Link
+              href={"/dashboard/dalle"}
+              style={{ textDecoration: "None", color: "black" }}
+            >
+              <ListItemButton>
                 <ListItemIcon>
-                    <ShoppingCartIcon />
+                  <ShoppingCartIcon />
                 </ListItemIcon>
-                <ListItemText primary="Product Images" />
-            </ListItemButton>
-           </Link> */}
+                <ListItemText primary="AI-Image generation" />
+              </ListItemButton>
+            </Link>
 
             <Link
               href={"/dashboard/bannerimages"}

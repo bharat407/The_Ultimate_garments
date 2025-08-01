@@ -1,6 +1,7 @@
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
+import securityicon from "../../../Assets/securityicon.png";
 
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -32,7 +33,7 @@ export default function PaymentNavBar(props) {
                 textAlign: "center",
               }}
             >
-              The Ultimate Garments
+              Looksy – Fast Fashion
             </div>
           )}
           <div
@@ -60,9 +61,10 @@ export default function PaymentNavBar(props) {
               }}
             >
               <img
-                src={`securityicon.png`}
+                src={securityicon}
                 style={{ width: "12%", height: "auto" }}
- alt=""              />
+                alt=""
+              />
               100% SECURE PAYMENT
             </div>
           </div>

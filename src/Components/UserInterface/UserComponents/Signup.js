@@ -167,42 +167,44 @@ export default function SignupDialog(props) {
     }
   };
 
- const handleLogin = async () => {
-  const result = await postData("user/login", {
-    email: loginEmail,
-    password: loginPassword,
-  });
+  const handleLogin = async () => {
+    const result = await postData("user/login", {
+      email: loginEmail,
+      password: loginPassword,
+    });
 
-  console.log("Login API Result:", result); // Debug log
+    console.log("Login API Result:", result); // Debug log
 
-  if (result.token) {
-    setToken(result.token);
-    setEmail(loginEmail);
-    localStorage.setItem("token", result.token);
+    if (result.token) {
+      setToken(result.token);
+      setEmail(loginEmail);
+      localStorage.setItem("token", result.token);
 
-    // ✅ Fetch full user details
-    const userResponse = await fetch(`http://localhost:8080/user/get-by/${loginEmail}`);
-    const user = await userResponse.json();
+      // ✅ Fetch full user details
+      const userResponse = await fetch(
+        `http://localhost:8080/user/get-by/${loginEmail}`
+      );
+      const user = await userResponse.json();
 
-    console.log("Fetched User Data:", user); // Debug log
+      console.log("Fetched User Data:", user); // Debug log
 
-    if (user.userid) { // Assuming 'userid' is the correct property for user ID
-      // 🔄 Save user to localStorage or pass via props
-      localStorage.setItem("user", JSON.stringify(user));
-      console.log("Dispatching ADD_USER with payload:", [user.email, user]); // Debug log
-      dispatch({ type: "ADD_USER", payload: [user.email, user] });
+      if (user.userid) {
+        // Assuming 'userid' is the correct property for user ID
+        // 🔄 Save user to localStorage or pass via props
+        localStorage.setItem("user", JSON.stringify(user));
+        console.log("Dispatching ADD_USER with payload:", [user.email, user]); // Debug log
+        dispatch({ type: "ADD_USER", payload: [user.email, user] });
+      } else {
+        console.warn("User ID not found in fetched user data:", user); // Debug log
+      }
+
+      handleClose();
+      setError("");
     } else {
-      console.warn("User ID not found in fetched user data:", user); // Debug log
+      setError(result.error || "Login failed");
+      console.error("Login failed:", result.error || "Unknown error"); // Debug log
     }
-
-    handleClose();
-    setError("");
-  } else {
-    setError(result.error || "Login failed");
-    console.error("Login failed:", result.error || "Unknown error"); // Debug log
-  }
-};
-
+  };
 
   const handleResendOtp = async () => {
     const result = await postData("user/resend-otp", { email });
@@ -263,16 +265,16 @@ export default function SignupDialog(props) {
               alignItems: "center",
             }}
           >
-            <img
+            {/* <img
               src={`${ServerURL}/images/popimg.webp`}
               alt="Welcome"
               style={{ width: "100%", height: "100%" }}
-            />
+            /> */}
           </div>
           <div style={{ fontSize: 40, color: "#02475b" }}>Welcome to TUG</div>
           <div style={{ fontSize: 15, fontWeight: 400, color: "#0087BA" }}>
-            Enter your details. Let us quickly get to know you so that we can get
-            you the best help :)
+            Enter your details. Let us quickly get to know you so that we can
+            get you the best help :)
           </div>
         </DialogTitle>
         <DialogContent dividers={scroll === "paper"}>
@@ -323,8 +325,16 @@ export default function SignupDialog(props) {
                   value={value}
                   onChange={handleChange}
                 >
-                  <FormControlLabel value="male" control={<Radio />} label="Male" />
-                  <FormControlLabel value="female" control={<Radio />} label="Female" />
+                  <FormControlLabel
+                    value="male"
+                    control={<Radio />}
+                    label="Male"
+                  />
+                  <FormControlLabel
+                    value="female"
+                    control={<Radio />}
+                    label="Female"
+                  />
                 </RadioGroup>
               </FormControl>
             </Grid>
@@ -352,7 +362,9 @@ export default function SignupDialog(props) {
               />
             </Grid>
             <Grid item xs={12}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>Confirm Password</div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>
+                Confirm Password
+              </div>
               <TextField
                 fullWidth
                 placeholder="Confirm Password"
@@ -416,13 +428,18 @@ export default function SignupDialog(props) {
         >
           <ArrowBackIcon fontSize="large" onClick={handleBackToClickOpen} />
         </div>
-        <BootstrapDialogTitle id="customized-dialog-title" onClose={handleOtpClose}>
+        <BootstrapDialogTitle
+          id="customized-dialog-title"
+          onClose={handleOtpClose}
+        >
           <div style={{ fontSize: 40, color: "#02475b" }}>Verify OTP</div>
         </BootstrapDialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <div style={{ fontSize: 16, fontWeight: "500", color: "#0087BA" }}>
+              <div
+                style={{ fontSize: 16, fontWeight: "500", color: "#0087BA" }}
+              >
                 Now type in the OTP sent to {email} for authentication
               </div>
             </Grid>
@@ -473,7 +490,10 @@ export default function SignupDialog(props) {
         open={open}
         TransitionComponent={Transition}
       >
-        <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
+        <BootstrapDialogTitle
+          id="customized-dialog-title"
+          onClose={handleClose}
+        >
           <div style={{ fontSize: 40, color: "#02475b" }}>Login / Signup</div>
         </BootstrapDialogTitle>
         <DialogContent dividers>
@@ -566,8 +586,8 @@ export default function SignupDialog(props) {
             gap: "10px",
           }}
         >
-           <span>{email}</span>
-            <Button variant="text" size="small" onClick={handleLogout}>
+          <span>{email}</span>
+          <Button variant="text" size="small" onClick={handleLogout}>
             Logout
           </Button>
         </div>

@@ -32,7 +32,7 @@ export default function AdminAppBar() {
       >
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            The Ultimate Garments
+            Looksy – Fast Fashion 
           </Typography>
           <Button onClick={handleLogout} color="inherit">
             Logout

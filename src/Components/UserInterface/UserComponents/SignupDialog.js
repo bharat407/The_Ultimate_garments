@@ -252,11 +252,11 @@ export default function SignupDialog(props) {
               alignItems: "center",
             }}
           >
-            <img
+            {/* <img
               src={`${ServerURL}/images/popimg.webp`}
               alt="Welcome"
               style={{ width: "100%", height: "100%" }}
-            />
+            /> */}
           </div>
           <div style={{ fontSize: 40, color: "#02475b" }}>Welcome to TUG</div>
           <div style={{ fontSize: 15, fontWeight: 400, color: "#0087BA" }}>

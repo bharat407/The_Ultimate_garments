@@ -2,7 +2,7 @@ import { getData, postData, ServerURL } from "../../Services/NodeServices";
 import { Button, Grid } from "@mui/material";
 import PaymentNavBar from "./PaymentNavBar";
 import { ShoppingCart } from "@mui/icons-material";
-
+import customersgif from "../../../Assets/customers.gif"
 export default function EmptyCart(props) {
   return (
     <div>
@@ -26,7 +26,7 @@ export default function EmptyCart(props) {
             width: "100%",
           }}
         >
-          <img src={`customers.gif`} style={{ width: "30%", height: "auto" }} />
+          <img src={customersgif} alt="gif" style={{ width: "30%", height: "auto" }} />
         </div>
       </div>
 

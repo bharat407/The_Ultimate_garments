@@ -75,7 +75,7 @@ export default function Home(props) {
     var result = await postData("api/products/by_salestatus", body);
     setProductByPopular(result.data);
   };
-  
+
   const fetchTwoPriorityForSubcategory1 = async (priority) => {
     var result = await getData("subcategory/by-priority/2");
     console.log("Priority 2 data:", result); // Add this line
@@ -124,9 +124,9 @@ export default function Home(props) {
   return (
     <div>
       {/* <div style={{position:'fixed',zIndex:3,width:'100%',marginTop:'-120px'}}> */}
-     
+
       <SearchBar search={false} />
-   
+
       <MainBar />
       {/* </div> */}
 
@@ -198,7 +198,7 @@ export default function Home(props) {
           <TwoCardComponent data={twoPriorityImages2} url={"productlist"} />
         </div>
 
-         <Heading heading="SHOP FOR Kids" color="#343434" />
+        <Heading heading="SHOP FOR Kids" color="#343434" />
         <div
           style={{
             display: "flex",

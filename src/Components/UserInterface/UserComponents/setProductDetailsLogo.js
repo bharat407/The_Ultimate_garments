@@ -1,5 +1,6 @@
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import useStyles from "./setProductDetailsLogoCss";
+import ft from "../../../Assets/ft.png";
 
 export default function SetProductDetailsLogo() {
   const classes = useStyles();
@@ -15,7 +16,7 @@ export default function SetProductDetailsLogo() {
         ₹50/product applicable on COD orders. The return or exchange can be done
         within 15 days after delivery. Every delivery from{" "}
         <b>
-          <i>Ultimate Garements</i>
+          <i> Looksy – Fast Fashion </i>
         </b>{" "}
         is processed under excellent condition and in the fastest time possible.
         for our beloved customer’s care, we give contactless delivery. Refer to
@@ -23,7 +24,7 @@ export default function SetProductDetailsLogo() {
       </div>
       <div className={classes.quote}>
         WE PROVIDE BETTER....{" "}
-        <img src="ft.png" width="20%" style={{ marginLeft: 90 }} />
+        <img src={ft} width="20%" style={{ marginLeft: 90 }} />
       </div>
     </div>
   );

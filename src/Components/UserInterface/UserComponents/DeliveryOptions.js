@@ -1,4 +1,6 @@
 import { TextField, Button } from "@mui/material";
+import cod from "../../../Assets/cod.jpg";
+import ship from "../../../Assets/ship.jpg";
 export default function DeliveryOptions() {
   return (
     <div>
@@ -30,7 +32,7 @@ export default function DeliveryOptions() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <img src="cod.jpg" width="40px" alt="" />
+          <img src={cod} width="40px" alt="" />
           <div
             style={{
               display: "flex",
@@ -43,7 +45,7 @@ export default function DeliveryOptions() {
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <img src="ship.jpg" width="40px" alt="" />
+          <img src={ship} width="40px" alt="" />
           <div
             style={{
               display: "flex",
